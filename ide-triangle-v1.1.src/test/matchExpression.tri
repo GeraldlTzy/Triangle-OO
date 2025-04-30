@@ -1,0 +1,9 @@
+let
+ func diasmes(mes : Integer) : Integer ~
+ 	match mes of
+ 		case 2: 28
+ 		case 4,6,9,11: 30
+		otherwise: 31
+ 	end
+in
+ putint(diasmes(4))

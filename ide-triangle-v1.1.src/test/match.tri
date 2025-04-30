@@ -1,0 +1,15 @@
+let 
+	var mes : Integer
+in begin
+	mes := 2;
+
+	match mes of
+		case 2:
+			putint(28)
+		case 1,3,5,7,8,10,12:
+			putint(31)
+		otherwise:
+			putint(30)
+	end;
+
+end

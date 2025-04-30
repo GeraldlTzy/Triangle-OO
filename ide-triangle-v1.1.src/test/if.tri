@@ -1,0 +1,8 @@
+let
+	var n: Integer
+in begin
+	n := 2;
+	putint(n);
+	puteol();
+	if n>3 then putint(1) else putint(0);
+end

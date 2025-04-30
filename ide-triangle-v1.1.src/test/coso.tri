@@ -1,0 +1,5 @@
+let
+	var n: Integer
+in begin
+	for n:=10 downto 0 do putint(n)
+end
