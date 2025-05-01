@@ -651,6 +651,31 @@ public final class Checker implements Visitor {
     ast.FT = (FieldTypeDenoter) ast.FT.visit(this, null);
     return ast;
   }
+  public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
+    TypeDeclaration classDecl = new TypeDeclaration(ast.classId, ast, ast.position);
+    idTable.enter(ast.classId.spelling, classDecl);
+    
+    if (classDecl.duplicated) {
+        reporter.reportError("Clase \"%\" ya definida", ast.classId.spelling, ast.position);
+    }
+    
+    if (ast.parentId.spelling.equals("Object")) {
+       ast.body.visit(this, null);
+    } else {
+        Declaration parentDecl = (Declaration) idTable.retrieve(ast.parentId.spelling);
+        if (parentDecl == null) {
+          reporter.reportError("Clase padre \"%\" no definida", ast.parentId.spelling, ast.parentId.position);
+        }
+        if (parentDecl instanceof TypeDeclaration) {
+            ast.parentType = ((TypeDeclaration) parentDecl).T;
+        }
+        idTable.openScope();
+        ast.body.visit(this, null);
+        idTable.closeScope();
+    }
+    return ast;
+  }
+
 
   public Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast, Object o) {
     ast.T = (TypeDenoter) ast.T.visit(this, null);

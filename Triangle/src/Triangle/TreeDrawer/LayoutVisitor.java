@@ -86,6 +86,7 @@ import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.AbstractSyntaxTrees.MatchExpression;
 import Triangle.AbstractSyntaxTrees.RepeatCommand;
+import Triangle.AbstractSyntaxTrees.ClassTypeDenoter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -362,6 +363,10 @@ public class LayoutVisitor implements Visitor {
     return layoutUnary("Rec.TypeD.", ast.FT);
   }
 
+  // agregado
+  public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object obj) {
+    return layoutUnary("Rec.TypeD.", ast.body);
+  }
 
   public Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast, Object obj) {
     return layoutTernary("Mult.F.TypeD.", ast.I, ast.T, ast.FT);

@@ -74,6 +74,7 @@ import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.AbstractSyntaxTrees.MatchExpression;
 import Triangle.AbstractSyntaxTrees.RepeatCommand;
+import Triangle.AbstractSyntaxTrees.ClassTypeDenoter;
 import Triangle.CodeGenerator.Field;
 import Triangle.CodeGenerator.KnownAddress;
 import Triangle.CodeGenerator.KnownRoutine;
@@ -553,6 +554,11 @@ public class TableVisitor implements Visitor {
   }
   
   public Object visitRecordTypeDenoter(RecordTypeDenoter ast, Object o) {   
+      ast.FT.visit(this, null);
+      return(null);
+  }
+  // agregado
+  public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {   
       ast.FT.visit(this, null);
       return(null);
   }

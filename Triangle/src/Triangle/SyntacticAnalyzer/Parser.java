@@ -595,6 +595,18 @@ public class Parser {
     }
     return aggregateAST;
   }
+  
+  /*ClassAggregate parseClassAggregate() throws SyntaxError {
+      ClassAggregate aggregateAST = null; // in case there's a syntactic error
+      SourcePosition aggregatePos = new SourcePosition();
+      start(aggregatePos);
+      
+      
+      s
+      
+      
+      return aggregateAST;
+  }*/
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -979,6 +991,19 @@ public class Parser {
         accept(Token.END);
         finish(typePos);
         typeAST = new RecordTypeDenoter(fAST, typePos);
+      }
+      break;
+    // agregado
+    case Token.CLASS:
+      {
+        acceptIt();
+        Identifier classId = parseIdentifier();
+        accept(Token.INHERITS);
+        Identifier parentId = parseIdentifier();
+        Declaration decls = parseDeclaration();
+        accept(Token.END);
+        finish(typePos);
+        typeAST = new ClassTypeDenoter(classId, parentId, decls, typePos);
       }
       break;
 

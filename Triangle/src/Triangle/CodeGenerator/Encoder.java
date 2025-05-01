@@ -98,6 +98,7 @@ import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.AbstractSyntaxTrees.MatchExpression;
 import Triangle.AbstractSyntaxTrees.RepeatCommand;
 import Triangle.ContextualAnalyzer.IdentificationTable;
+import Triangle.AbstractSyntaxTrees.ClassTypeDenoter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -699,6 +700,27 @@ public final class Encoder implements Visitor {
       typeSize = ast.entity.size;
     return new Integer(typeSize);
   }
+  // agregado
+  public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
+     int typeSize = 0;
+     //Frame frame = (Frame) o;
+     if (ast.entity == null) {
+       if (ast.parentType != null) {
+         Integer parentSize = ((Integer) ast.parentType.visit(this, typeSize)).intValue();
+         typeSize += parentSize;
+       }
+
+       Integer bodySize = ((Integer) ast.body.visit(this, typeSize)).intValue();
+       typeSize += bodySize;
+
+       ast.entity = new TypeRepresentation(typeSize);
+       writeTableDetails(ast);
+     } else {
+       typeSize = ast.entity.size;
+     }
+
+     return new Integer(typeSize);
+   }
 
 
   public Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast,
