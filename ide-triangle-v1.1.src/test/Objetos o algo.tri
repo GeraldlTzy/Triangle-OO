@@ -1,0 +1,10 @@
+let
+	type Persona ~ class PersonaClass inherits Object
+		var nombre: Char;
+		var edad: Integer
+	end;
+
+	var p: Persona
+in begin
+	put('a')
+end

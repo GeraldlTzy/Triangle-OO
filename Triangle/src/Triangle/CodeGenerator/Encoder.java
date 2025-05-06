@@ -451,16 +451,26 @@ public final class Encoder implements Visitor {
   public Object visitSequentialDeclaration(SequentialDeclaration ast, Object o) {
     Frame frame = (Frame) o;
     int extraSize1, extraSize2;
-
+    
+    System.out.println("Declarar D1 de la declaracion de algo");
     extraSize1 = ((Integer) ast.D1.visit(this, frame)).intValue();
     Frame frame1 = new Frame (frame, extraSize1);
+    System.out.println("Declarar D2 de la declaracion de algo");
     extraSize2 = ((Integer) ast.D2.visit(this, frame1)).intValue();
     return new Integer(extraSize1 + extraSize2);
   }
 
   public Object visitTypeDeclaration(TypeDeclaration ast, Object o) {
     // just to ensure the type's representation is decided
-    ast.T.visit(this, null);
+    //Antes no tenia el frame pq las type declaration no parecen necesitrar el frame
+    //Este antes pasaba null en lugar del frame
+    //pero las variables para ser declaradas necesitan un frame para algo que no se
+    // Probvablemnte para meterse en el stack y esas cosillas de ensamblador
+    //Como la clase tiene una declaracion de variables, estas variables tambien necesitan acceso al frame
+    // Pero si pasamos null, enonces el frame de esas variables no es valido, por lo  que la clase tambien necesita el Frame
+    Frame frame = (Frame) o;
+    System.out.println("---Type denoter pero con el frame---");
+    ast.T.visit(this, frame);
     return new Integer(0);
   }
 
@@ -473,6 +483,7 @@ public final class Encoder implements Visitor {
     Frame frame = (Frame) o;
     int extraSize;
 
+    System.out.println("Declaracion de una variable");
     extraSize = ((Integer) ast.T.visit(this, null)).intValue();
     emit(Machine.PUSHop, 0, 0, extraSize);
     ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
@@ -701,26 +712,34 @@ public final class Encoder implements Visitor {
     return new Integer(typeSize);
   }
   // agregado
-  public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
-     int typeSize = 0;
-     //Frame frame = (Frame) o;
-     if (ast.entity == null) {
-       if (ast.parentType != null) {
-         Integer parentSize = ((Integer) ast.parentType.visit(this, typeSize)).intValue();
-         typeSize += parentSize;
-       }
+public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
+    int typeSize = 0;
+    Frame frame = (Frame) o;
+    if (ast.entity == null) {
+        System.out.println("Definitivamentre entro enm el coso de algo");
+        if (ast.parentType != null) {
+            //Para que las variables tengan el frame 
+            Frame frame1 = new Frame (frame, typeSize);
+            
+            System.out.println("El chunche del padre");
+            Integer parentSize = ((Integer) ast.parentType.visit(this, frame1)).intValue();
+            typeSize += parentSize;
+        }
+        System.out.println("El body");
+        //Para que las variables tengan el frame 
+        Frame frame2 = new Frame (frame, typeSize);
+        
+        Integer bodySize = ((Integer) ast.body.visit(this, frame2)).intValue();
+        typeSize += bodySize;
 
-       Integer bodySize = ((Integer) ast.body.visit(this, typeSize)).intValue();
-       typeSize += bodySize;
+        ast.entity = new TypeRepresentation(typeSize);
+        writeTableDetails(ast);
+    } else {
+        typeSize = ast.entity.size;
+    }
 
-       ast.entity = new TypeRepresentation(typeSize);
-       writeTableDetails(ast);
-     } else {
-       typeSize = ast.entity.size;
-     }
-
-     return new Integer(typeSize);
-   }
+    return new Integer(typeSize);
+ }
 
 
   public Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast,
