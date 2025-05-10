@@ -651,14 +651,7 @@ public final class Checker implements Visitor {
     ast.FT = (FieldTypeDenoter) ast.FT.visit(this, null);
     return ast;
   }
-  public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
-    TypeDeclaration classDecl = new TypeDeclaration(ast.classId, ast, ast.position);
-    idTable.enter(ast.classId.spelling, classDecl);
-    
-    if (classDecl.duplicated) {
-        reporter.reportError("Clase \"%\" ya definida", ast.classId.spelling, ast.position);
-    }
-    
+  public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {           
     if (ast.parentId.spelling.equals("Object")) {
        ast.body.visit(this, null);
     } else {

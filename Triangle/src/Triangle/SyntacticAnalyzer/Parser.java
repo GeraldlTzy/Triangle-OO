@@ -996,14 +996,13 @@ public class Parser {
     // agregado
     case Token.CLASS:
       {
-        acceptIt();
-        Identifier classId = parseIdentifier();
+        acceptIt();        
         accept(Token.INHERITS);
         Identifier parentId = parseIdentifier();
         Declaration decls = parseDeclaration();
         accept(Token.END);
         finish(typePos);
-        typeAST = new ClassTypeDenoter(classId, parentId, decls, typePos);
+        typeAST = new ClassTypeDenoter(parentId, decls, typePos);
       }
       break;
 
