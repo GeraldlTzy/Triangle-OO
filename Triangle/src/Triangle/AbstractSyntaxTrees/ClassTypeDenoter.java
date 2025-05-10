@@ -22,11 +22,10 @@ public class ClassTypeDenoter extends TypeDenoter {
   public boolean equals (Object obj) {
     if (obj != null && obj instanceof ErrorTypeDenoter)
       return true;
-    else if (obj != null && obj instanceof RecordTypeDenoter)
-      return this.FT.equals(((RecordTypeDenoter) obj).FT);
+    else if (obj != null && obj instanceof ClassTypeDenoter)
+      return this.body.equals(((ClassTypeDenoter) obj).body);
     else
       return false;
   }
 
-  public FieldTypeDenoter FT;
 }
