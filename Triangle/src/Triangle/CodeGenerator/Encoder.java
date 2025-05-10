@@ -712,25 +712,17 @@ public final class Encoder implements Visitor {
     return new Integer(typeSize);
   }
   // agregado
-public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
-    int typeSize = 0;
-    Frame frame = (Frame) o;
-    if (ast.entity == null) {
-        System.out.println("Definitivamentre entro enm el coso de algo");
-        if (ast.parentType != null) {
-            //Para que las variables tengan el frame 
-            Frame frame1 = new Frame (frame, typeSize);
-            
-            System.out.println("El chunche del padre");
-            Integer parentSize = ((Integer) ast.parentType.visit(this, frame1)).intValue();
-            typeSize += parentSize;
-        }
-        System.out.println("El body");
-        //Para que las variables tengan el frame 
-        Frame frame2 = new Frame (frame, typeSize);
-        
-        Integer bodySize = ((Integer) ast.body.visit(this, frame2)).intValue();
-        typeSize += bodySize;
+  public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
+     int typeSize = 0;
+     //Frame frame = (Frame) o;
+     if (ast.entity == null) {
+       if (ast.parentId.type != null) {
+         Integer parentSize = ((Integer) ast.parentId.type.visit(this, typeSize)).intValue();
+         typeSize += parentSize;
+       }
+
+       Integer bodySize = ((Integer) ast.body.visit(this, typeSize)).intValue();
+       typeSize += bodySize;
 
         ast.entity = new TypeRepresentation(typeSize);
         writeTableDetails(ast);
