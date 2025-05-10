@@ -653,7 +653,9 @@ public final class Checker implements Visitor {
   }
   public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {           
     if (ast.parentId.spelling.equals("Object")) {
-       ast.body.visit(this, null);
+        idTable.openScope();
+            ast.body.visit(this, null);
+        idTable.closeScope();
     } else {
         Declaration parentDecl = (Declaration) idTable.retrieve(ast.parentId.spelling);
         if (parentDecl == null) {
@@ -735,7 +737,7 @@ public final class Checker implements Visitor {
             reporter.reportError ("no field \"%\" in this record type", ast.I.spelling, ast.I.position);
         }
     } else if (vType instanceof ClassTypeDenoter) {
-        checkAttributeIdentifier(((ClassTypeDenoter) vType).body, ast.I);
+        ast.type = checkFieldIdentifier(((ClassTypeDenoter) vType).body, ast.I);
         if (ast.type == StdEnvironment.errorType){
             reporter.reportError ("no field \"%\" in this class type", ast.I.spelling, ast.I.position);
         }
@@ -846,6 +848,47 @@ public final class Checker implements Visitor {
     return StdEnvironment.errorType;
   }
   
+  private static TypeDenoter checkFieldIdentifier(Declaration ast, Identifier I) {
+
+    if(ast instanceof SequentialDeclaration){    
+        SequentialDeclaration sDeclaration = (SequentialDeclaration) ast;
+        if (sDeclaration.D2 instanceof VarDeclaration) {
+          VarDeclaration varDeclaration = (VarDeclaration) sDeclaration.D2;
+          if (varDeclaration.I.spelling.compareTo(I.spelling) == 0) {
+            I.decl = sDeclaration.D2;
+            return varDeclaration.T;
+          } else{
+              return checkFieldIdentifier (sDeclaration.D1, I);
+          }
+        } else if (sDeclaration.D2 instanceof FuncDeclaration) {
+            System.out.println("RevisaIdFuncion");
+            FuncDeclaration funcDeclaration = (FuncDeclaration) sDeclaration.D2;
+            if (funcDeclaration.I.spelling.compareTo(I.spelling) == 0) {
+              I.decl = sDeclaration.D2;
+              return funcDeclaration.T;
+            } else{
+              return checkFieldIdentifier (sDeclaration.D1, I);
+          }
+        } 
+    } else{
+        if (ast instanceof VarDeclaration) {
+          VarDeclaration varDeclaration = (VarDeclaration) ast;
+          if (varDeclaration.I.spelling.compareTo(I.spelling) == 0) {
+            I.decl = ast;
+            return varDeclaration.T;
+          } 
+        } else if (ast instanceof FuncDeclaration) {
+            FuncDeclaration funcDeclaration = (FuncDeclaration) ast;
+            if (funcDeclaration.I.spelling.compareTo(I.spelling) == 0) {
+              I.decl = ast;
+              return funcDeclaration.T;
+            }
+        }
+    } 
+          
+    
+    return StdEnvironment.errorType;
+  }
 
   // Creates a small AST to represent the "declaration" of a standard
   // type, and enters it in the identification table.
