@@ -716,12 +716,11 @@ public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
     int typeSize = 0;
     Frame frame = (Frame) o;
     if (ast.entity == null) {
-        System.out.println("Definitivamentre entro enm el coso de algo");
         if (ast.parentType != null) {
             //Para que las variables tengan el frame 
             Frame frame1 = new Frame (frame, typeSize);
             
-            System.out.println("El chunche del padre");
+            System.out.println("El padre");
             Integer parentSize = ((Integer) ast.parentType.visit(this, frame1)).intValue();
             typeSize += parentSize;
         }

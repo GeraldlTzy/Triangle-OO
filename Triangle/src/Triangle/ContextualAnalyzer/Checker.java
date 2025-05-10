@@ -736,13 +736,20 @@ public final class Checker implements Visitor {
     ast.type = null;
     TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
     ast.variable = ast.V.variable;
-    if (! (vType instanceof RecordTypeDenoter))
-      reporter.reportError ("record expected here", "", ast.V.position);
-    else {
+    
+    
+    if (vType instanceof RecordTypeDenoter){
       ast.type = checkFieldIdentifier(((RecordTypeDenoter) vType).FT, ast.I);
       if (ast.type == StdEnvironment.errorType)
         reporter.reportError ("no field \"%\" in this record type",
                               ast.I.spelling, ast.I.position);
+    }  else if (vType instanceof ClassTypeDenoter) {//agregado
+        //ast.type = checkFieldClassIdentifier((ClassTypeDenoter) vType, ast.I);
+        if (ast.type == null || ast.type == StdEnvironment.errorType)
+            reporter.reportError("no field \"%\" in class type", ast.I.spelling, ast.I.position);
+    }    
+    else {
+      reporter.reportError ("record or class expected here", "", ast.V.position);
     }
     return ast.type;
   }
