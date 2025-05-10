@@ -728,14 +728,19 @@ public final class Checker implements Visitor {
   public Object visitDotVname(DotVname ast, Object o) {
     ast.type = null;
     TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
-    ast.variable = ast.V.variable;
-    if (! (vType instanceof RecordTypeDenoter))
-      reporter.reportError ("record expected here", "", ast.V.position);
-    else {
-      ast.type = checkFieldIdentifier(((RecordTypeDenoter) vType).FT, ast.I);
-      if (ast.type == StdEnvironment.errorType)
-        reporter.reportError ("no field \"%\" in this record type",
-                              ast.I.spelling, ast.I.position);
+    ast.variable = ast.V.variable;                    
+    if (vType instanceof RecordTypeDenoter){
+        ast.type = checkFieldIdentifier(((RecordTypeDenoter) vType).FT, ast.I);
+        if (ast.type == StdEnvironment.errorType){
+            reporter.reportError ("no field \"%\" in this record type", ast.I.spelling, ast.I.position);
+        }
+    } else if (vType instanceof ClassTypeDenoter) {
+        checkAttributeIdentifier(((ClassTypeDenoter) vType).body, ast.I);
+        if (ast.type == StdEnvironment.errorType){
+            reporter.reportError ("no field \"%\" in this class type", ast.I.spelling, ast.I.position);
+        }
+    } else {
+        reporter.reportError ("record or object expected here", "", ast.V.position);    
     }
     return ast.type;
   }
@@ -840,7 +845,7 @@ public final class Checker implements Visitor {
     }
     return StdEnvironment.errorType;
   }
-
+  
 
   // Creates a small AST to represent the "declaration" of a standard
   // type, and enters it in the identification table.
