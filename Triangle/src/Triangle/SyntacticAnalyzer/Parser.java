@@ -218,15 +218,26 @@ public class Parser {
           ActualParameterSequence apsAST = parseActualParameterSequence();
           accept(Token.RPAREN);
           finish(commandPos);
-          commandAST = new CallCommand(iAST, apsAST, commandPos);
+          commandAST = new CallCommand(null, iAST, apsAST, commandPos);
 
         } else {
+            System.out.println("Entra");
 
-          Vname vAST = parseRestOfVname(iAST);
-          accept(Token.BECOMES);
-          Expression eAST = parseExpression();
-          finish(commandPos);
-          commandAST = new AssignCommand(vAST, eAST, commandPos);
+            Vname vAST = parseRestOfVname(iAST);
+            if (currentToken.kind == Token.LPAREN) {
+            acceptIt();
+            ActualParameterSequence apsAST = parseActualParameterSequence();
+            accept(Token.RPAREN);
+            finish(commandPos);
+            commandAST = new CallCommand(vAST, null, apsAST, commandPos);
+
+            } else{
+                accept(Token.BECOMES);
+                Expression eAST = parseExpression();
+                finish(commandPos);
+                commandAST = new AssignCommand(vAST, eAST, commandPos);
+            }
+          
         }
       }
       break;
