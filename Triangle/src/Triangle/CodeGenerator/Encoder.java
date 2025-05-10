@@ -705,8 +705,8 @@ public final class Encoder implements Visitor {
      int typeSize = 0;
      //Frame frame = (Frame) o;
      if (ast.entity == null) {
-       if (ast.parentType != null) {
-         Integer parentSize = ((Integer) ast.parentType.visit(this, typeSize)).intValue();
+       if (ast.parentId.type != null) {
+         Integer parentSize = ((Integer) ast.parentId.type.visit(this, typeSize)).intValue();
          typeSize += parentSize;
        }
 

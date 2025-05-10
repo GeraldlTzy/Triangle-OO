@@ -6,14 +6,12 @@ import Triangle.SyntacticAnalyzer.SourcePosition;
 public class ClassTypeDenoter extends TypeDenoter {
     public Identifier classId;
     public Identifier parentId;
-    public Declaration body;
-    public TypeDenoter parentType;
+    public Declaration body;    
 
     public ClassTypeDenoter (Identifier classId, Identifier parentId, Declaration body, SourcePosition pos) {
         super(pos);
         this.classId = classId;
         this.parentId = parentId;
-        this.parentType = null;
         this.body = body;
     }
 

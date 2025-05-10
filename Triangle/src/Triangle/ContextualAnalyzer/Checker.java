@@ -667,7 +667,7 @@ public final class Checker implements Visitor {
           reporter.reportError("Clase padre \"%\" no definida", ast.parentId.spelling, ast.parentId.position);
         }
         if (parentDecl instanceof TypeDeclaration) {
-            ast.parentType = ((TypeDeclaration) parentDecl).T;
+            ast.parentId.type = ((TypeDeclaration) parentDecl).T;
         }
         idTable.openScope();
         ast.body.visit(this, null);
