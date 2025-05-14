@@ -318,6 +318,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitConstDeclaration(ConstDeclaration ast, Object o) {
+    ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
     idTable.enter(ast.I.spelling, ast);
     if (ast.duplicated)
@@ -327,6 +328,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitFuncDeclaration(FuncDeclaration ast, Object o) {
+    ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
     ast.T = (TypeDenoter) ast.T.visit(this, null);
     idTable.enter (ast.I.spelling, ast); // permits recursion
     if (ast.duplicated)
@@ -343,6 +345,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitProcDeclaration(ProcDeclaration ast, Object o) {
+    ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
     idTable.enter (ast.I.spelling, ast); // permits recursion
     if (ast.duplicated)
       reporter.reportError ("identifier \"%\" already declared",
@@ -361,6 +364,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitTypeDeclaration(TypeDeclaration ast, Object o) {
+    ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
     ast.T = (TypeDenoter) ast.T.visit(this, null);
     idTable.enter (ast.I.spelling, ast);
     if (ast.duplicated)
@@ -374,6 +378,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitVarDeclaration(VarDeclaration ast, Object o) {
+    ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
     ast.T = (TypeDenoter) ast.T.visit(this, null);
     idTable.enter (ast.I.spelling, ast);
     if (ast.duplicated)
@@ -657,7 +662,7 @@ public final class Checker implements Visitor {
   public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {           
     if (ast.parentId.spelling.equals("Object")) {
         idTable.openScope();
-            ast.body.visit(this, null);
+            ast.body.visit(this, true);
         idTable.closeScope();
     } else {
         Declaration parentDecl = (Declaration) idTable.retrieve(ast.parentId.spelling);
@@ -668,7 +673,7 @@ public final class Checker implements Visitor {
             ast.parentId.type = ((TypeDeclaration) parentDecl).T;
         }
         idTable.openScope();
-        ast.body.visit(this, null);
+        ast.body.visit(this, true);
         idTable.closeScope();
     }
     return ast;
