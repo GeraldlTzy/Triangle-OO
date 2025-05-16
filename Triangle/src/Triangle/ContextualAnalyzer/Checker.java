@@ -358,8 +358,9 @@ public final class Checker implements Visitor {
   }
 
   public Object visitSequentialDeclaration(SequentialDeclaration ast, Object o) {
-    ast.D1.visit(this, null);
-    ast.D2.visit(this, null);
+    ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
+    ast.D1.visit(this, o);
+    ast.D2.visit(this, o);
     return null;
   }
 
