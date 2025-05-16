@@ -878,7 +878,15 @@ public final class Checker implements Visitor {
             } else{
               return checkFieldIdentifier (sDeclaration.D1, I);
           }
-        } 
+        } else if (sDeclaration.D2 instanceof ConstDeclaration) {
+            ConstDeclaration declaration = (ConstDeclaration) sDeclaration.D2;
+            if (declaration.I.spelling.compareTo(I.spelling) == 0) {
+              I.decl = sDeclaration.D2;
+              return declaration.E.type;
+            } else{
+              return checkFieldIdentifier (sDeclaration.D1, I);
+          }
+        }         
     } else{
         if (ast instanceof VarDeclaration) {
           VarDeclaration varDeclaration = (VarDeclaration) ast;
@@ -892,9 +900,14 @@ public final class Checker implements Visitor {
               I.decl = ast;
               return funcDeclaration.T;
             }
-        }
-    } 
-          
+        }else if (ast instanceof ConstDeclaration) {
+            ConstDeclaration declaration = (ConstDeclaration) ast;
+            if (declaration.I.spelling.compareTo(I.spelling) == 0) {
+              I.decl = ast;
+              return declaration.E.type;            
+            }     
+        } 
+    }
     
     return StdEnvironment.errorType;
   }

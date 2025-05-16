@@ -406,8 +406,8 @@ public final class Encoder implements Visitor {
       ast.entity = new UnknownValue(valSize, frame.level, frame.size);
       extraSize = valSize;
     }
-    writeTableDetails(ast);
-    return new Integer(extraSize);
+    writeTableDetails(ast);   
+    return new Integer(extraSize);    
   }
 
   public Object visitFuncDeclaration(FuncDeclaration ast, Object o) {
@@ -454,23 +454,24 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitSequentialDeclaration(SequentialDeclaration ast, Object o) {    
-    int extraSize1, extraSize2;
+    int extraSize1, extraSize2;                
+    Frame frame = (Frame) o;
     
-    if(!ast.classDeclaration){
-        Frame frame = (Frame) o;
-        System.out.println("Declarar D1 de la declaracion de algo");
-        extraSize1 = ((Integer) ast.D1.visit(this, frame)).intValue();
-        Frame frame1 = new Frame (frame, extraSize1);
-        System.out.println("Declarar D2 de la declaracion de algo");
-        extraSize2 = ((Integer) ast.D2.visit(this, frame1)).intValue();
-    } else {
-        int offset = (Integer) o;
-        System.out.println("Declarar D1 de la declaracion de algo");
-        extraSize1 = (Integer) ast.D1.visit(this, offset);
-        offset += extraSize1;
-        System.out.println("Declarar D2 de la declaracion de algo");
-        extraSize2 = ((Integer) ast.D2.visit(this, offset)).intValue();
+    System.out.println("Declarar D1 de la declaracion de algo");
+    extraSize1 = ((Integer) ast.D1.visit(this, frame)).intValue();
+    if(ast.D1 instanceof VarDeclaration){
+        frame.offset += extraSize1;
+    }else{
+        frame = new Frame (frame, extraSize1);
     }
+    
+    System.out.println("Declarar D2 de la declaracion de algo");
+    extraSize2 = ((Integer) ast.D2.visit(this, frame)).intValue();
+    if(ast.D2 instanceof VarDeclaration){
+        frame.offset += extraSize1;
+    }else{
+        Frame frame1 = new Frame (frame, extraSize1);
+    }    
     
     return extraSize1 + extraSize2;
   }
@@ -496,17 +497,16 @@ public final class Encoder implements Visitor {
 
   public Object visitVarDeclaration(VarDeclaration ast, Object o) {   
     int extraSize;
+    Frame frame = (Frame) o;
     System.out.println("Declaracion de una variable");
-    extraSize = ((Integer) ast.T.visit(this, null)).intValue();
+    extraSize = ((Integer) ast.T.visit(this, o)).intValue();
     System.out.println(ast.classDeclaration);
-    if(!ast.classDeclaration){
-        Frame frame = (Frame) o;
+    if(ast.classDeclaration){        
+        ast.entity = new Field(extraSize, frame.offset);
+    } else {        
         emit(Machine.PUSHop, 0, 0, extraSize);
         ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
         writeTableDetails(ast);
-    } else {
-        int offset = (Integer) o;
-        ast.entity = new Field(extraSize, offset);
     }
     return new Integer(extraSize);
   }
@@ -759,17 +759,17 @@ public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
 //    }
 //
 //    return new Integer(typeSize);
-    
+    Frame frame = (Frame) o;
     int typeSize = 0;
-    int offset = 0;
+    frame.offset = 0;
     if (ast.entity == null) { // Calcular el tamaño del tipo
         if (ast.parentId.type != null) { //Calcular el tamaño del tipo padre                                  
-            int parentSize =  (Integer) ast.parentId.type.visit(this, offset);
+            int parentSize =  (Integer) ast.parentId.type.visit(this, frame);
             typeSize += parentSize;
-            offset = typeSize;
+            frame.offset = typeSize;
         }               
         
-        Integer bodySize = (Integer) ast.body.visit(this, offset); //Calcular el tamaño del body teniendo en cuenta el offset del tipo padre
+        Integer bodySize = (Integer) ast.body.visit(this, frame); //Calcular el tamaño del body teniendo en cuenta el offset del tipo padre
         typeSize += bodySize;
 
         ast.entity = new TypeRepresentation(typeSize);
@@ -874,12 +874,21 @@ public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
   // Value-or-variable names
   public Object visitDotVname(DotVname ast, Object o) {
     Frame frame = (Frame) o;
+    
     RuntimeEntity baseObject = (RuntimeEntity) ast.V.visit(this, frame);
-    ast.offset = ast.V.offset + ((Field) ast.I.decl.entity).fieldOffset;
+    RuntimeEntity identifierObject = ast.I.decl.entity;
+    if (identifierObject instanceof Field){
+        ast.offset = ast.V.offset + ((Field) ast.I.decl.entity).fieldOffset;
                    // I.decl points to the appropriate record field
-    ast.indexed = ast.V.indexed;
-    return baseObject;
+        ast.indexed = ast.V.indexed;
+        return baseObject;
+    } else if (identifierObject instanceof KnownValue){
+      return identifierObject;
+    } else{
+        return null; // Esto no deberia pasar nunca
+    }   
   }
+  
 
   public Object visitSimpleVname(SimpleVname ast, Object o) {
     ast.offset = 0;
