@@ -777,7 +777,7 @@ public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
     } else {
         typeSize = ast.entity.size;
     }
-
+    frame.offset = 0;
     return typeSize;    
 }
 
