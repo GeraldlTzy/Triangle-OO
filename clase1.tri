@@ -1,0 +1,13 @@
+let
+  type punto ~ class inherits Object
+    var x : Integer;
+    var y : Integer
+  end;
+  var unPunto : punto;
+  var otroPunto : punto
+in begin
+  unPunto.x := 2;
+  otroPunto.x := 5;
+  putint(unPunto.x);
+  putint(otroPunto.x)
+end

@@ -354,8 +354,10 @@ public class TableVisitor implements Visitor {
       addIdentifier(ast.I.spelling, 
               "KnownAddress", 
               (ast.entity!=null?ast.entity.size:0), 
-              ((KnownAddress)ast.entity).address.level, 
-              ((KnownAddress)ast.entity).address.displacement, 
+              ast.entity instanceof KnownAddress ?
+              ((KnownAddress)ast.entity).address.level:0, 
+              ast.entity instanceof KnownAddress ?
+              ((KnownAddress)ast.entity).address.displacement:0, 
               -1);
       } catch (NullPointerException e) { }
       

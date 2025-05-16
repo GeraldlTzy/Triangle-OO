@@ -377,8 +377,12 @@ public final class Encoder implements Visitor {
         return valSize;
     }
 
+//___  ____ ____ _    ____ ____ ____ ___ _ ____ _  _ ____ 
+//|  \ |___ |    |    |__| |__/ |__|  |  | |  | |\ | [__  
+//|__/ |___ |___ |___ |  | |  \ |  |  |  | |__| | \| ___]
 
-  // Declarations
+// <editor-fold>
+  
   public Object visitBinaryOperatorDeclaration(BinaryOperatorDeclaration ast,
                            Object o){
     return new Integer(0);
@@ -398,6 +402,7 @@ public final class Encoder implements Visitor {
                  Integer.parseInt(IL.spelling));
     } else {
       int valSize = ((Integer) ast.E.visit(this, frame)).intValue();
+      
       ast.entity = new UnknownValue(valSize, frame.level, frame.size);
       extraSize = valSize;
     }
@@ -448,16 +453,26 @@ public final class Encoder implements Visitor {
     return new Integer(0);
   }
 
-  public Object visitSequentialDeclaration(SequentialDeclaration ast, Object o) {
-    Frame frame = (Frame) o;
+  public Object visitSequentialDeclaration(SequentialDeclaration ast, Object o) {    
     int extraSize1, extraSize2;
     
-    System.out.println("Declarar D1 de la declaracion de algo");
-    extraSize1 = ((Integer) ast.D1.visit(this, frame)).intValue();
-    Frame frame1 = new Frame (frame, extraSize1);
-    System.out.println("Declarar D2 de la declaracion de algo");
-    extraSize2 = ((Integer) ast.D2.visit(this, frame1)).intValue();
-    return new Integer(extraSize1 + extraSize2);
+    if(!ast.classDeclaration){
+        Frame frame = (Frame) o;
+        System.out.println("Declarar D1 de la declaracion de algo");
+        extraSize1 = ((Integer) ast.D1.visit(this, frame)).intValue();
+        Frame frame1 = new Frame (frame, extraSize1);
+        System.out.println("Declarar D2 de la declaracion de algo");
+        extraSize2 = ((Integer) ast.D2.visit(this, frame1)).intValue();
+    } else {
+        int offset = (Integer) o;
+        System.out.println("Declarar D1 de la declaracion de algo");
+        extraSize1 = (Integer) ast.D1.visit(this, offset);
+        offset += extraSize1;
+        System.out.println("Declarar D2 de la declaracion de algo");
+        extraSize2 = ((Integer) ast.D2.visit(this, offset)).intValue();
+    }
+    
+    return extraSize1 + extraSize2;
   }
 
   public Object visitTypeDeclaration(TypeDeclaration ast, Object o) {
@@ -479,18 +494,24 @@ public final class Encoder implements Visitor {
     return new Integer(0);
   }
 
-  public Object visitVarDeclaration(VarDeclaration ast, Object o) {
-    Frame frame = (Frame) o;
+  public Object visitVarDeclaration(VarDeclaration ast, Object o) {   
     int extraSize;
-
     System.out.println("Declaracion de una variable");
     extraSize = ((Integer) ast.T.visit(this, null)).intValue();
-    emit(Machine.PUSHop, 0, 0, extraSize);
-    ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
-    writeTableDetails(ast);
+    System.out.println(ast.classDeclaration);
+    if(!ast.classDeclaration){
+        Frame frame = (Frame) o;
+        emit(Machine.PUSHop, 0, 0, extraSize);
+        ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
+        writeTableDetails(ast);
+    } else {
+        int offset = (Integer) o;
+        ast.entity = new Field(extraSize, offset);
+    }
     return new Integer(extraSize);
   }
 
+// </editor-fold>
 
   // Array Aggregates
   public Object visitMultipleArrayAggregate(MultipleArrayAggregate ast,
