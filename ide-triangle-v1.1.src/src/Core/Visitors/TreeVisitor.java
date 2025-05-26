@@ -75,6 +75,7 @@ import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.AbstractSyntaxTrees.MatchExpression;
 import Triangle.AbstractSyntaxTrees.RepeatCommand;
 import Triangle.AbstractSyntaxTrees.ClassTypeDenoter;
+import Triangle.AbstractSyntaxTrees.Declaration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -162,7 +163,16 @@ public class TreeVisitor implements Visitor {
     }
     
     public Object visitCallExpression(CallExpression ast, Object obj) {
-        return(createBinary("Call Expression", ast.I, ast.APS));
+        
+        if(ast.V == null){
+            return(createBinary("Call Expression", ast.I, ast.APS));        
+        } else{
+            ast.V.visit(this, null);
+            DotVname vName = (DotVname) ast.V;
+            return(createBinary("Call Expression", vName.I, ast.APS)); 
+                   
+        }
+    
     }
     
     public Object visitCharacterExpression(CharacterExpression ast, Object obj) {

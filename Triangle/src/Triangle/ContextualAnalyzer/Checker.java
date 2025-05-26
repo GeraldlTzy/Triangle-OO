@@ -201,28 +201,42 @@ public final class Checker implements Visitor {
   public Object visitCallExpression(CallExpression ast, Object o) {
       //Esto está completamente mal
     Declaration binding = null;
-      if(ast.V == null){
+    if(ast.V == null){
         binding = (Declaration) ast.I.visit(this, null);
         
     } else{
+        /*
         //Esto no debería visitarse así, hay un problema con los parámetros
         DotVname vName = (DotVname) ast.V;
-        binding = (Declaration) vName.I.visit(this, null);
+        //binding = (Declaration) vName.I.visit(this, null);
         //ast.APS.visit(this, ((ClassTypeDenoter) vType).body, ast.I);
         //ast.type = (TypeDenoter) ast.V.visit(this, null);
+        */
+        
+        ast.V.visit(this, null);
+        DotVname vName = (DotVname) ast.V;
+        binding = (Declaration) vName.I.decl;
+                   
     }
     if (binding == null) {
           reportUndeclared(ast.I);
           ast.type = StdEnvironment.errorType;
-        } else if (binding instanceof FuncDeclaration) {
+    
+    } else if (binding instanceof FuncDeclaration) {
+          System.out.println("Es una declaracion de funcion");
           ast.APS.visit(this, ((FuncDeclaration) binding).FPS);
           ast.type = ((FuncDeclaration) binding).T;
-        } else if (binding instanceof FuncFormalParameter) {
+    
+    } else if (binding instanceof FuncFormalParameter) {
+          System.out.println("Es un parametro x alguna razon");
           ast.APS.visit(this, ((FuncFormalParameter) binding).FPS);
           ast.type = ((FuncFormalParameter) binding).T;
-        } else
+    
+    } else {
           reporter.reportError("\"%\" is not a function identifier",
                                ast.I.spelling, ast.I.position);
+          ast.type = StdEnvironment.errorType;
+    }
     return ast.type;
   }
 
@@ -339,9 +353,12 @@ public final class Checker implements Visitor {
   }
 
   public Object visitFuncDeclaration(FuncDeclaration ast, Object o) {
+    System.out.println("FuncDelcaration: FPS de " + ast.I.spelling + ": " + ast.FPS.getClass().getSimpleName());
+      
     ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
     ast.T = (TypeDenoter) ast.T.visit(this, null);
     idTable.enter (ast.I.spelling, ast); // permits recursion
+    
     if (ast.duplicated)
       reporter.reportError ("identifier \"%\" already declared",
                             ast.I.spelling, ast.position);
@@ -349,9 +366,11 @@ public final class Checker implements Visitor {
     ast.FPS.visit(this, null);
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
     idTable.closeScope();
+    
     if (! ast.T.equals(eType))
       reporter.reportError ("body of function \"%\" has wrong type",
                             ast.I.spelling, ast.E.position);
+    
     return null;
   }
 
@@ -513,6 +532,7 @@ public final class Checker implements Visitor {
     if (! (fp instanceof ConstFormalParameter))
       reporter.reportError ("const actual parameter not expected here", "",
                             ast.position);
+    
     else if (! eType.equals(((ConstFormalParameter) fp).T))
       reporter.reportError ("wrong type for const actual parameter", "",
                             ast.E.position);

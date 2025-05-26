@@ -1,13 +1,16 @@
-let
-	type Persona ~ class inherits Object
-		var nombre: Char;
-		var edad: Integer;
-		func algo(var num:Integer):Integer ~
-			num+1
+let 
+	type Punto ~ class inherits Object
+		var x: Integer;
+		var y: Integer;
+		func estatica(num1:Integer): Integer ~
+			num1+1
 	end;
-
-	var p: Persona
+	var p: Punto;
+	var a: Integer;
+	var b: Integer
 in begin
-	p.edad := 3;
-	p.algo(2)
+
+	b := p.estatica(6);
+	putint(b)
+
 end
