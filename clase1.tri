@@ -1,7 +1,8 @@
 let
   type punto ~ class inherits Object
     var x : Integer;
-    var y : Integer
+    var y : Integer;
+    func inicio(n : Integer) : Integer ~ n + 1
   end;
   var unPunto : punto;
   var otroPunto : punto
@@ -9,5 +10,7 @@ in begin
   unPunto.x := 2;
   otroPunto.x := 5;
   putint(unPunto.x);
-  putint(otroPunto.x)
+  putint(otroPunto.x);
+  putint(unPunto.inicio(3));
+
 end

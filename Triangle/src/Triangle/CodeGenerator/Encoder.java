@@ -273,7 +273,11 @@ public final class Encoder implements Visitor {
     Frame frame = (Frame) o;
     Integer valSize = (Integer) ast.type.visit(this, null);
     Integer argsSize = (Integer) ast.APS.visit(this, frame);
-    ast.I.visit(this, new Frame(frame.level, argsSize));
+    if(ast.I == null){
+        ast.V.visit(this, new Frame(frame.level, argsSize));
+    }else{
+        ast.I.visit(this, new Frame(frame.level, argsSize));
+    }
     return valSize;
   }
 
