@@ -18,9 +18,10 @@ import Triangle.SyntacticAnalyzer.SourcePosition;
 
 public class CallExpression extends Expression {
 
-  public CallExpression (Identifier iAST, ActualParameterSequence apsAST,
+  public CallExpression (Vname vName, Identifier iAST, ActualParameterSequence apsAST,
                SourcePosition thePosition) {
     super (thePosition);
+    V = vName;
     I = iAST;
     APS = apsAST;
   }
@@ -29,6 +30,7 @@ public class CallExpression extends Expression {
     return v.visitCallExpression(this, o);
   }
 
+  public Vname V;
   public Identifier I;
   public ActualParameterSequence APS;
 }

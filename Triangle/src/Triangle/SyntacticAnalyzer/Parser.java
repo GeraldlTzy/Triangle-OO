@@ -492,12 +492,21 @@ public class Parser {
           ActualParameterSequence apsAST = parseActualParameterSequence();
           accept(Token.RPAREN);
           finish(expressionPos);
-          expressionAST = new CallExpression(iAST, apsAST, expressionPos);
+          expressionAST = new CallExpression(null, iAST, apsAST, expressionPos);
 
         } else {
-          Vname vAST = parseRestOfVname(iAST);
-          finish(expressionPos);
-          expressionAST = new VnameExpression(vAST, expressionPos);
+            Vname vAST = parseRestOfVname(iAST);
+            if (currentToken.kind == Token.LPAREN) {
+                acceptIt();
+                ActualParameterSequence apsAST = parseActualParameterSequence();
+                accept(Token.RPAREN);
+                finish(expressionPos);
+                expressionAST = new CallExpression(vAST, null, apsAST, expressionPos);
+
+            } else{
+                finish(expressionPos);
+                expressionAST = new VnameExpression(vAST, expressionPos);
+            }
         }
       }
       break;

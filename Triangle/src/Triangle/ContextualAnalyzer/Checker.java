@@ -199,19 +199,30 @@ public final class Checker implements Visitor {
   }
 
   public Object visitCallExpression(CallExpression ast, Object o) {
-    Declaration binding = (Declaration) ast.I.visit(this, null);
+      //Esto está completamente mal
+    Declaration binding = null;
+      if(ast.V == null){
+        binding = (Declaration) ast.I.visit(this, null);
+        
+    } else{
+        //Esto no debería visitarse así, hay un problema con los parámetros
+        DotVname vName = (DotVname) ast.V;
+        binding = (Declaration) vName.I.visit(this, null);
+        //ast.APS.visit(this, ((ClassTypeDenoter) vType).body, ast.I);
+        //ast.type = (TypeDenoter) ast.V.visit(this, null);
+    }
     if (binding == null) {
-      reportUndeclared(ast.I);
-      ast.type = StdEnvironment.errorType;
-    } else if (binding instanceof FuncDeclaration) {
-      ast.APS.visit(this, ((FuncDeclaration) binding).FPS);
-      ast.type = ((FuncDeclaration) binding).T;
-    } else if (binding instanceof FuncFormalParameter) {
-      ast.APS.visit(this, ((FuncFormalParameter) binding).FPS);
-      ast.type = ((FuncFormalParameter) binding).T;
-    } else
-      reporter.reportError("\"%\" is not a function identifier",
-                           ast.I.spelling, ast.I.position);
+          reportUndeclared(ast.I);
+          ast.type = StdEnvironment.errorType;
+        } else if (binding instanceof FuncDeclaration) {
+          ast.APS.visit(this, ((FuncDeclaration) binding).FPS);
+          ast.type = ((FuncDeclaration) binding).T;
+        } else if (binding instanceof FuncFormalParameter) {
+          ast.APS.visit(this, ((FuncFormalParameter) binding).FPS);
+          ast.type = ((FuncFormalParameter) binding).T;
+        } else
+          reporter.reportError("\"%\" is not a function identifier",
+                               ast.I.spelling, ast.I.position);
     return ast.type;
   }
 
