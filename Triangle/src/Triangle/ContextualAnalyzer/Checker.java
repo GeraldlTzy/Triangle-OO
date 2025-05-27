@@ -199,8 +199,8 @@ public final class Checker implements Visitor {
   }
 
   public Object visitCallExpression(CallExpression ast, Object o) {
-      //Esto está completamente mal
-    Declaration binding = null;
+      System.out.println("Checker call expresion");
+      Declaration binding = null;
     if(ast.V == null){
         binding = (Declaration) ast.I.visit(this, null);
         
@@ -223,7 +223,7 @@ public final class Checker implements Visitor {
           ast.type = StdEnvironment.errorType;
     
     } else if (binding instanceof FuncDeclaration) {
-          System.out.println("Es una declaracion de funcion");
+          System.out.println("- CallExpression> Es una declaracion de funcion");
           ast.APS.visit(this, ((FuncDeclaration) binding).FPS);
           ast.type = ((FuncDeclaration) binding).T;
     
@@ -353,17 +353,23 @@ public final class Checker implements Visitor {
   }
 
   public Object visitFuncDeclaration(FuncDeclaration ast, Object o) {
-    System.out.println("FuncDelcaration: FPS de " + ast.I.spelling + ": " + ast.FPS.getClass().getSimpleName());
+    System.out.println("----- FuncDelcaration: FPS de " + ast.I.spelling + ": " + ast.FPS.getClass().getSimpleName());
       
     ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
+      System.out.println("-----visit type denoter T");
     ast.T = (TypeDenoter) ast.T.visit(this, null);
+    
     idTable.enter (ast.I.spelling, ast); // permits recursion
     
     if (ast.duplicated)
       reporter.reportError ("identifier \"%\" already declared",
                             ast.I.spelling, ast.position);
+    
     idTable.openScope();
+     System.out.println("-----visit formal parameter sequence FPS");
     ast.FPS.visit(this, null);
+    
+        System.out.println("-----visit type denoter E");
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
     idTable.closeScope();
     
@@ -466,7 +472,8 @@ public final class Checker implements Visitor {
   // Always returns null. Does not use the given object.
 
   public Object visitConstFormalParameter(ConstFormalParameter ast, Object o) {
-    ast.T = (TypeDenoter) ast.T.visit(this, null);
+    System.out.println("const formal parameter");
+      ast.T = (TypeDenoter) ast.T.visit(this, null);
     idTable.enter(ast.I.spelling, ast);
     if (ast.duplicated)
       reporter.reportError ("duplicated formal parameter \"%\"",
@@ -475,7 +482,8 @@ public final class Checker implements Visitor {
   }
 
   public Object visitFuncFormalParameter(FuncFormalParameter ast, Object o) {
-    idTable.openScope();
+    System.out.println("func formal parameter");
+      idTable.openScope();
     ast.FPS.visit(this, null);
     idTable.closeScope();
     ast.T = (TypeDenoter) ast.T.visit(this, null);
@@ -487,7 +495,8 @@ public final class Checker implements Visitor {
   }
 
   public Object visitProcFormalParameter(ProcFormalParameter ast, Object o) {
-    idTable.openScope();
+    System.out.println("proc formal parameter");
+      idTable.openScope();
     ast.FPS.visit(this, null);
     idTable.closeScope();
     idTable.enter (ast.I.spelling, ast);
@@ -498,7 +507,8 @@ public final class Checker implements Visitor {
   }
 
   public Object visitVarFormalParameter(VarFormalParameter ast, Object o) {
-    ast.T = (TypeDenoter) ast.T.visit(this, null);
+    System.out.println("var formal parameter");
+      ast.T = (TypeDenoter) ast.T.visit(this, null);
     idTable.enter (ast.I.spelling, ast);
     if (ast.duplicated)
       reporter.reportError ("duplicated formal parameter \"%\"",
@@ -507,16 +517,19 @@ public final class Checker implements Visitor {
   }
 
   public Object visitEmptyFormalParameterSequence(EmptyFormalParameterSequence ast, Object o) {
-    return null;
+    System.out.println("empty formal parameter sequence");
+      return null;
   }
 
   public Object visitMultipleFormalParameterSequence(MultipleFormalParameterSequence ast, Object o) {
-    ast.FP.visit(this, null);
+    System.out.println("multiple formal parameter sequence");
+      ast.FP.visit(this, null);
     ast.FPS.visit(this, null);
     return null;
   }
 
   public Object visitSingleFormalParameterSequence(SingleFormalParameterSequence ast, Object o) {
+            System.out.println("single formal parameter sequence");
     ast.FP.visit(this, null);
     return null;
   }
@@ -527,6 +540,7 @@ public final class Checker implements Visitor {
 
   public Object visitConstActualParameter(ConstActualParameter ast, Object o) {
     FormalParameter fp = (FormalParameter) o;
+    System.out.println("Checker const actual parameter");
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
 
     if (! (fp instanceof ConstFormalParameter))
@@ -616,6 +630,7 @@ public final class Checker implements Visitor {
 
   public Object visitEmptyActualParameterSequence(EmptyActualParameterSequence ast, Object o) {
     FormalParameterSequence fps = (FormalParameterSequence) o;
+    System.out.println("-- Checker: empty actual parameter sequence");
     if (! (fps instanceof EmptyFormalParameterSequence))
       reporter.reportError ("too few actual parameters", "", ast.position);
     return null;
@@ -623,6 +638,7 @@ public final class Checker implements Visitor {
 
   public Object visitMultipleActualParameterSequence(MultipleActualParameterSequence ast, Object o) {
     FormalParameterSequence fps = (FormalParameterSequence) o;
+    System.out.println("--- Checker: multiple actual parameter sequence");
     if (! (fps instanceof MultipleFormalParameterSequence))
       reporter.reportError ("too many actual parameters", "", ast.position);
     else {
@@ -634,6 +650,7 @@ public final class Checker implements Visitor {
 
   public Object visitSingleActualParameterSequence(SingleActualParameterSequence ast, Object o) {
     FormalParameterSequence fps = (FormalParameterSequence) o;
+    System.out.println("--- Checker: single actual parameter sequence");
     if (! (fps instanceof SingleFormalParameterSequence))
       reporter.reportError ("incorrect number of actual parameters", "", ast.position);
     else {
@@ -768,6 +785,7 @@ public final class Checker implements Visitor {
   // given object.
 
   public Object visitDotVname(DotVname ast, Object o) {
+      System.out.println("----- dot vname");
     ast.type = null;
     TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
     ast.variable = ast.V.variable;                    
@@ -900,15 +918,18 @@ public final class Checker implements Visitor {
           } else{
               return checkFieldIdentifier (sDeclaration.D1, I);
           }
+        
         } else if (sDeclaration.D2 instanceof FuncDeclaration) {
             System.out.println("RevisaIdFuncion");
             FuncDeclaration funcDeclaration = (FuncDeclaration) sDeclaration.D2;
             if (funcDeclaration.I.spelling.compareTo(I.spelling) == 0) {
+                System.out.println("- Efectivamente es el spelling y se metio en I.decl la decl d2");
               I.decl = sDeclaration.D2;
               return funcDeclaration.T;
             } else{
               return checkFieldIdentifier (sDeclaration.D1, I);
           }
+        
         } else if (sDeclaration.D2 instanceof ConstDeclaration) {
             ConstDeclaration declaration = (ConstDeclaration) sDeclaration.D2;
             if (declaration.I.spelling.compareTo(I.spelling) == 0) {

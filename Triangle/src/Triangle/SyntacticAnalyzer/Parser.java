@@ -487,7 +487,9 @@ public class Parser {
     case Token.IDENTIFIER:
       {
         Identifier iAST= parseIdentifier();
+          System.out.println("Parseando identifier");
         if (currentToken.kind == Token.LPAREN) {
+            System.out.println("Se encointro un Lparen");
           acceptIt();
           ActualParameterSequence apsAST = parseActualParameterSequence();
           accept(Token.RPAREN);
@@ -732,6 +734,7 @@ public class Parser {
 
     case Token.FUNC:
       {
+          System.out.println("Parseando single declaration de func");
         acceptIt();
         Identifier iAST = parseIdentifier();
         accept(Token.LPAREN);
@@ -775,7 +778,8 @@ public class Parser {
 
   FormalParameterSequence parseFormalParameterSequence() throws SyntaxError {
     FormalParameterSequence formalsAST;
-
+      System.out.println("-- Parseando FPS");
+    
     SourcePosition formalsPos = new SourcePosition();
 
     start(formalsPos);
@@ -791,7 +795,7 @@ public class Parser {
 
   FormalParameterSequence parseProperFormalParameterSequence() throws SyntaxError {
     FormalParameterSequence formalsAST = null; // in case there's a syntactic error;
-
+        System.out.println("-- parseando proper FPS");
     SourcePosition formalsPos = new SourcePosition();
     start(formalsPos);
     FormalParameter fpAST = parseFormalParameter();
@@ -801,17 +805,19 @@ public class Parser {
       finish(formalsPos);
       formalsAST = new MultipleFormalParameterSequence(fpAST, fpsAST,
         formalsPos);
+        System.out.println("Tira un multiple");
 
     } else {
       finish(formalsPos);
       formalsAST = new SingleFormalParameterSequence(fpAST, formalsPos);
+        System.out.println("Tira un single");
     }
     return formalsAST;
   }
 
   FormalParameter parseFormalParameter() throws SyntaxError {
     FormalParameter formalAST = null; // in case there's a syntactic error;
-
+      System.out.println("-- Parseando un FP");
     SourcePosition formalPos = new SourcePosition();
     start(formalPos);
 
@@ -823,12 +829,14 @@ public class Parser {
         accept(Token.COLON);
         TypeDenoter tAST = parseTypeDenoter();
         finish(formalPos);
+          System.out.println("-- FP const");
         formalAST = new ConstFormalParameter(iAST, tAST, formalPos);
       }
       break;
 
     case Token.VAR:
       {
+          System.out.println("FP var");
         acceptIt();
         Identifier iAST = parseIdentifier();
         accept(Token.COLON);
@@ -875,6 +883,7 @@ public class Parser {
 
 
   ActualParameterSequence parseActualParameterSequence() throws SyntaxError {
+      System.out.println("-- Parseando APS");
     ActualParameterSequence actualsAST;
 
     SourcePosition actualsPos = new SourcePosition();
@@ -893,6 +902,7 @@ public class Parser {
   ActualParameterSequence parseProperActualParameterSequence() throws SyntaxError {
     ActualParameterSequence actualsAST = null; // in case there's a syntactic error
 
+      System.out.println("-- parseando Proper APS");
     SourcePosition actualsPos = new SourcePosition();
 
     start(actualsPos);
@@ -903,16 +913,18 @@ public class Parser {
       finish(actualsPos);
       actualsAST = new MultipleActualParameterSequence(apAST, apsAST,
         actualsPos);
+        System.out.println("Tiro un multiple APS");
     } else {
       finish(actualsPos);
       actualsAST = new SingleActualParameterSequence(apAST, actualsPos);
+        System.out.println("Tiro un single APS");
     }
     return actualsAST;
   }
 
   ActualParameter parseActualParameter() throws SyntaxError {
     ActualParameter actualAST = null; // in case there's a syntactic error
-
+      System.out.println("-- parseando AP");
     SourcePosition actualPos = new SourcePosition();
 
     start(actualPos);
@@ -931,6 +943,7 @@ public class Parser {
       {
         Expression eAST = parseExpression();
         finish(actualPos);
+          System.out.println("Construye un const AP");
         actualAST = new ConstActualParameter(eAST, actualPos);
       }
       break;
@@ -940,6 +953,7 @@ public class Parser {
         acceptIt();
         Vname vAST = parseVname();
         finish(actualPos);
+          System.out.println("construye un var AP");
         actualAST = new VarActualParameter(vAST, actualPos);
       }
       break;

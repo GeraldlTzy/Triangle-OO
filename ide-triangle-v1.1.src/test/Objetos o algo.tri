@@ -9,8 +9,8 @@ let
 	var a: Integer;
 	var b: Integer
 in begin
-
-	b := p.estatica(6);
+	a := 2;
+	b := p.estatica(a);
 	putint(b)
 
 end
