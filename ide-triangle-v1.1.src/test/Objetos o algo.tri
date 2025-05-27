@@ -1,10 +1,13 @@
 let
-	type Persona ~ class PersonaClass inherits Object
+	type Persona ~ class inherits Object
 		var nombre: Char;
-		var edad: Integer
+		var edad: Integer;
+		func algo(var num:Integer):Integer ~
+			num+1
 	end;
 
 	var p: Persona
 in begin
-	put('a')
+	p.edad := 3;
+	p.algo(2)
 end
