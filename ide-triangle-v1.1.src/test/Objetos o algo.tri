@@ -2,15 +2,14 @@ let
 	type Punto ~ class inherits Object
 		var x: Integer;
 		var y: Integer;
-		func estatica(num1:Integer): Integer ~
-			num1+1
+		func estatica(var x:Integer): Integer ~ x+1
 	end;
 	var p: Punto;
 	var a: Integer;
 	var b: Integer
 in begin
 	a := 2;
-	b := p.estatica(a);
+	b := p.estatica(var a);
 	putint(b)
 
 end
