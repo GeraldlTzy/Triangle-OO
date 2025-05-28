@@ -274,7 +274,9 @@ public final class Encoder implements Visitor {
     Integer valSize = (Integer) ast.type.visit(this, null);
     Integer argsSize = (Integer) ast.APS.visit(this, frame);
     if(ast.I == null){
-        ast.V.visit(this, new Frame(frame.level, argsSize));
+           DotVname vName = (DotVname) ast.V;
+           vName.I.visit(this, new Frame(frame.level, argsSize));
+           
     }else{
         ast.I.visit(this, new Frame(frame.level, argsSize));
     }

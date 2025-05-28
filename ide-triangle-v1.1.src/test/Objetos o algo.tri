@@ -3,14 +3,13 @@ let
 		var x: Integer;
 		var y: Integer;
 		func estatica(var x: Integer):Integer ~
-			x+1;
-		func algo(self: Punto):Integer ~ 
-			self.y+1
+			x+1
 	end;
 	var p: Punto;
 	var a: Integer;
 	var b: Integer
 in begin
-	p.y := 5;
+	a := 3;
+	b := p.estatica(var a);
 	putint(b)
 end
