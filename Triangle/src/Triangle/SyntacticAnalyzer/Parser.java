@@ -151,7 +151,8 @@ public class Parser {
       previousTokenPosition = currentToken.position;
       String spelling = currentToken.spelling;
       I = new Identifier(spelling, previousTokenPosition);
-      currentToken = lexicalAnalyser.scan();
+      //currentToken = lexicalAnalyser.scan();
+      acceptIt();
     } else {
       I = null;
       syntacticError("identifier expected here", "");
@@ -218,15 +219,26 @@ public class Parser {
           ActualParameterSequence apsAST = parseActualParameterSequence();
           accept(Token.RPAREN);
           finish(commandPos);
-          commandAST = new CallCommand(iAST, apsAST, commandPos);
+          commandAST = new CallCommand(null, iAST, apsAST, commandPos);
 
         } else {
+            System.out.println("Entra");
 
-          Vname vAST = parseRestOfVname(iAST);
-          accept(Token.BECOMES);
-          Expression eAST = parseExpression();
-          finish(commandPos);
-          commandAST = new AssignCommand(vAST, eAST, commandPos);
+            Vname vAST = parseRestOfVname(iAST);
+            if (currentToken.kind == Token.LPAREN) {
+            acceptIt();
+            ActualParameterSequence apsAST = parseActualParameterSequence();
+            accept(Token.RPAREN);
+            finish(commandPos);
+            commandAST = new CallCommand(vAST, null, apsAST, commandPos);
+
+            } else{
+                accept(Token.BECOMES);
+                Expression eAST = parseExpression();
+                finish(commandPos);
+                commandAST = new AssignCommand(vAST, eAST, commandPos);
+            }
+          
         }
       }
       break;
@@ -476,17 +488,43 @@ public class Parser {
     case Token.IDENTIFIER:
       {
         Identifier iAST= parseIdentifier();
+        Vname vAST2 = new SimpleVname(iAST, iAST.position);
         if (currentToken.kind == Token.LPAREN) {
           acceptIt();
           ActualParameterSequence apsAST = parseActualParameterSequence();
           accept(Token.RPAREN);
           finish(expressionPos);
           expressionAST = new CallExpression(iAST, apsAST, expressionPos);
-
         } else {
-          Vname vAST = parseRestOfVname(iAST);
-          finish(expressionPos);
-          expressionAST = new VnameExpression(vAST, expressionPos);
+            boolean method = false;
+            while (method == false && (currentToken.kind == Token.DOT || currentToken.kind == Token.LBRACKET)) {
+                if (currentToken.kind == Token.DOT) {
+                    acceptIt();
+                    Identifier iAST3 = parseIdentifier();
+
+                    if (currentToken.kind == Token.LPAREN){
+                        acceptIt();
+                        ActualParameterSequence apsAST = parseActualParameterSequence();
+                        accept(Token.RPAREN);
+                        finish(expressionPos);
+                        expressionAST = new MethodCallExpression(new SimpleVname(iAST, iAST.position), iAST3, apsAST, expressionPos);
+                        method = true;
+                        break;
+                    } else {
+                        vAST2 = new DotVname(vAST2, iAST3, iAST.position);
+                    }
+                } else {
+                    acceptIt();
+                    Expression eAST = parseExpression();
+                    accept(Token.RBRACKET);
+                    finish(iAST.position);
+                    vAST2 = new SubscriptVname(vAST2, eAST, iAST.position);
+                }
+            }
+            if (!method) {
+                finish(expressionPos);
+                expressionAST = new VnameExpression(vAST2, expressionPos);
+            }
         }
       }
       break;
@@ -595,19 +633,6 @@ public class Parser {
     }
     return aggregateAST;
   }
-  
-  /*ClassAggregate parseClassAggregate() throws SyntaxError {
-      ClassAggregate aggregateAST = null; // in case there's a syntactic error
-      SourcePosition aggregatePos = new SourcePosition();
-      start(aggregatePos);
-      
-      
-      s
-      
-      
-      return aggregateAST;
-  }*/
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // VALUE-OR-VARIABLE NAMES
@@ -996,14 +1021,13 @@ public class Parser {
     // agregado
     case Token.CLASS:
       {
-        acceptIt();
-        Identifier classId = parseIdentifier();
+        acceptIt();        
         accept(Token.INHERITS);
         Identifier parentId = parseIdentifier();
         Declaration decls = parseDeclaration();
         accept(Token.END);
         finish(typePos);
-        typeAST = new ClassTypeDenoter(classId, parentId, decls, typePos);
+        typeAST = new ClassTypeDenoter(parentId, decls, typePos);
       }
       break;
 

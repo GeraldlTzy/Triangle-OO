@@ -97,6 +97,7 @@ import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.AbstractSyntaxTrees.MatchExpression;
 import Triangle.AbstractSyntaxTrees.RepeatCommand;
+import Triangle.AbstractSyntaxTrees.MethodCallExpression;
 import Triangle.ContextualAnalyzer.IdentificationTable;
 import Triangle.AbstractSyntaxTrees.ClassTypeDenoter;
 import java.util.ArrayList;
@@ -377,8 +378,12 @@ public final class Encoder implements Visitor {
         return valSize;
     }
 
+//___  ____ ____ _    ____ ____ ____ ___ _ ____ _  _ ____ 
+//|  \ |___ |    |    |__| |__/ |__|  |  | |  | |\ | [__  
+//|__/ |___ |___ |___ |  | |  \ |  |  |  | |__| | \| ___]
 
-  // Declarations
+// <editor-fold>
+  
   public Object visitBinaryOperatorDeclaration(BinaryOperatorDeclaration ast,
                            Object o){
     return new Integer(0);
@@ -398,11 +403,12 @@ public final class Encoder implements Visitor {
                  Integer.parseInt(IL.spelling));
     } else {
       int valSize = ((Integer) ast.E.visit(this, frame)).intValue();
+      
       ast.entity = new UnknownValue(valSize, frame.level, frame.size);
       extraSize = valSize;
     }
-    writeTableDetails(ast);
-    return new Integer(extraSize);
+    writeTableDetails(ast);   
+    return new Integer(extraSize);    
   }
 
   public Object visitFuncDeclaration(FuncDeclaration ast, Object o) {
@@ -448,19 +454,40 @@ public final class Encoder implements Visitor {
     return new Integer(0);
   }
 
-  public Object visitSequentialDeclaration(SequentialDeclaration ast, Object o) {
+  public Object visitSequentialDeclaration(SequentialDeclaration ast, Object o) {    
+    int extraSize1, extraSize2;                
     Frame frame = (Frame) o;
-    int extraSize1, extraSize2;
-
+    
+    System.out.println("Declarar D1 de la declaracion de algo");
     extraSize1 = ((Integer) ast.D1.visit(this, frame)).intValue();
-    Frame frame1 = new Frame (frame, extraSize1);
-    extraSize2 = ((Integer) ast.D2.visit(this, frame1)).intValue();
-    return new Integer(extraSize1 + extraSize2);
+    if(ast.D1 instanceof VarDeclaration){
+        frame.offset += extraSize1;
+    }else{
+        frame = new Frame (frame, extraSize1);
+    }
+    
+    System.out.println("Declarar D2 de la declaracion de algo");
+    extraSize2 = ((Integer) ast.D2.visit(this, frame)).intValue();
+    if(ast.D2 instanceof VarDeclaration){
+        frame.offset += extraSize1;
+    }else{
+        Frame frame1 = new Frame (frame, extraSize1);
+    }    
+    
+    return extraSize1 + extraSize2;
   }
 
   public Object visitTypeDeclaration(TypeDeclaration ast, Object o) {
     // just to ensure the type's representation is decided
-    ast.T.visit(this, null);
+    //Antes no tenia el frame pq las type declaration no parecen necesitrar el frame
+    //Este antes pasaba null en lugar del frame
+    //pero las variables para ser declaradas necesitan un frame para algo que no se
+    // Probvablemnte para meterse en el stack y esas cosillas de ensamblador
+    //Como la clase tiene una declaracion de variables, estas variables tambien necesitan acceso al frame
+    // Pero si pasamos null, enonces el frame de esas variables no es valido, por lo  que la clase tambien necesita el Frame
+    Frame frame = (Frame) o;
+    System.out.println("---Type denoter pero con el frame---");
+    ast.T.visit(this, frame);
     return new Integer(0);
   }
 
@@ -469,17 +496,23 @@ public final class Encoder implements Visitor {
     return new Integer(0);
   }
 
-  public Object visitVarDeclaration(VarDeclaration ast, Object o) {
-    Frame frame = (Frame) o;
+  public Object visitVarDeclaration(VarDeclaration ast, Object o) {   
     int extraSize;
-
-    extraSize = ((Integer) ast.T.visit(this, null)).intValue();
-    emit(Machine.PUSHop, 0, 0, extraSize);
-    ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
-    writeTableDetails(ast);
+    Frame frame = (Frame) o;
+    System.out.println("Declaracion de una variable");
+    extraSize = ((Integer) ast.T.visit(this, o)).intValue();
+    System.out.println(ast.classDeclaration);
+    if(ast.classDeclaration){        
+        ast.entity = new Field(extraSize, frame.offset);
+    } else {        
+        emit(Machine.PUSHop, 0, 0, extraSize);
+        ast.entity = new KnownAddress(Machine.addressSize, frame.level, frame.size);
+        writeTableDetails(ast);
+    }
     return new Integer(extraSize);
   }
 
+// </editor-fold>
 
   // Array Aggregates
   public Object visitMultipleArrayAggregate(MultipleArrayAggregate ast,
@@ -700,27 +733,63 @@ public final class Encoder implements Visitor {
       typeSize = ast.entity.size;
     return new Integer(typeSize);
   }
-  // agregado
-  public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
-     int typeSize = 0;
-     //Frame frame = (Frame) o;
-     if (ast.entity == null) {
-       if (ast.parentType != null) {
-         Integer parentSize = ((Integer) ast.parentType.visit(this, typeSize)).intValue();
-         typeSize += parentSize;
-       }
 
-       Integer bodySize = ((Integer) ast.body.visit(this, typeSize)).intValue();
-       typeSize += bodySize;
+  
 
-       ast.entity = new TypeRepresentation(typeSize);
-       writeTableDetails(ast);
-     } else {
-       typeSize = ast.entity.size;
-     }
+public Object visitMethodCallExpression(MethodCallExpression ast, Object o) {
+    Frame frame = (Frame) o;
+    if (ast.methodDecl == null) {
+        reporter.reportError("Declaración del método no encontrada para llamada a método.", "", ast.position);
+        return new Integer(0);
+    }
+    if (ast.methodDecl.entity == null) {
+        reporter.reportError("Entidad no asignada a la declaración del método.", "", ast.position);
+        return new Integer(0);
+    }
+    KnownRoutine kr;
+    try {
+        kr = (KnownRoutine) ast.methodDecl.entity;
+    } catch (ClassCastException e) {
+        reporter.reportError("La entidad del método no es una rutina conocida.", "", ast.position);
+        return new Integer(0);
+    }
+    if (ast.aps != null) {
+        ast.aps.visit(this, frame);
+    } else {
+        // sin parametros
+    }
+    if (kr.address == null) {
+        reporter.reportError("Dirección no asignada a la rutina.", "", ast.position);
+        return new Integer(0);
+    }
+    emit(Machine.CALLop, 0, 0, kr.address.displacement);
+    if (ast.type == null || ast.type == StdEnvironment.errorType) {
+        return new Integer(0);
+    } else {
+        return new Integer(Machine.addressSize);
+    }
+} 
+public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
+    Frame frame = (Frame) o;
+    int typeSize = 0;
+    frame.offset = 0;
+    if (ast.entity == null) { // Calcular el tamaño del tipo
+        if (ast.parentId.type != null) { //Calcular el tamaño del tipo padre                                  
+            int parentSize =  (Integer) ast.parentId.type.visit(this, frame);
+            typeSize += parentSize;
+            frame.offset = typeSize;
+        }
+        Integer bodySize = (Integer) ast.body.visit(this, frame); //Calcular el tamaño del body teniendo en cuenta el offset del tipo padre
+        typeSize += bodySize;
 
-     return new Integer(typeSize);
-   }
+        ast.entity = new TypeRepresentation(typeSize);
+        writeTableDetails(ast);
+    } else {
+        typeSize = ast.entity.size;
+    }
+    frame.offset = 0;
+    return typeSize;    
+}
 
 
   public Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast,
@@ -815,12 +884,21 @@ public final class Encoder implements Visitor {
   // Value-or-variable names
   public Object visitDotVname(DotVname ast, Object o) {
     Frame frame = (Frame) o;
+    
     RuntimeEntity baseObject = (RuntimeEntity) ast.V.visit(this, frame);
-    ast.offset = ast.V.offset + ((Field) ast.I.decl.entity).fieldOffset;
+    RuntimeEntity identifierObject = ast.I.decl.entity;
+    if (identifierObject instanceof Field){
+        ast.offset = ast.V.offset + ((Field) ast.I.decl.entity).fieldOffset;
                    // I.decl points to the appropriate record field
-    ast.indexed = ast.V.indexed;
-    return baseObject;
+        ast.indexed = ast.V.indexed;
+        return baseObject;
+    } else if (identifierObject instanceof KnownValue){
+      return identifierObject;
+    } else{
+        return null; // Esto no deberia pasar nunca
+    }   
   }
+  
 
   public Object visitSimpleVname(SimpleVname ast, Object o) {
     ast.offset = 0;

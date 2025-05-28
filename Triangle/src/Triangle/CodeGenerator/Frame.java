@@ -43,4 +43,5 @@ public class Frame {
 
   protected int level;
   protected int size;
+  public int offset;
 }

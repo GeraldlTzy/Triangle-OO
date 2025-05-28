@@ -41,17 +41,20 @@ public final class Checker implements Visitor {
 
 
   public Object visitCallCommand(CallCommand ast, Object o) {
-
-    Declaration binding = (Declaration) ast.I.visit(this, null);
-    if (binding == null)
-      reportUndeclared(ast.I);
-    else if (binding instanceof ProcDeclaration) {
-      ast.APS.visit(this, ((ProcDeclaration) binding).FPS);
-    } else if (binding instanceof ProcFormalParameter) {
-      ast.APS.visit(this, ((ProcFormalParameter) binding).FPS);
-    } else
-      reporter.reportError("\"%\" is not a procedure identifier",
-                           ast.I.spelling, ast.I.position);
+    if(ast.V == null){
+        Declaration binding = (Declaration) ast.I.visit(this, null);
+        if (binding == null)
+          reportUndeclared(ast.I);
+        else if (binding instanceof ProcDeclaration) {
+          ast.APS.visit(this, ((ProcDeclaration) binding).FPS);
+        } else if (binding instanceof ProcFormalParameter) {
+          ast.APS.visit(this, ((ProcFormalParameter) binding).FPS);
+        } else
+          reporter.reportError("\"%\" is not a procedure identifier",
+                               ast.I.spelling, ast.I.position);
+    } else{
+        ast.V.visit(this, null);
+    }
     return null;
   }
 
@@ -212,6 +215,52 @@ public final class Checker implements Visitor {
     return ast.type;
   }
 
+    private FuncDeclaration findMethodInClassBody(Declaration body, String methodName) {
+        if (body == null) return null;
+        if (body instanceof FuncDeclaration) {
+            FuncDeclaration funcDecl = (FuncDeclaration) body;
+            if (funcDecl.I.spelling.equals(methodName)) {
+                return funcDecl;
+            } else {
+                return null;
+            }
+        } else if (body instanceof SequentialDeclaration) {
+            SequentialDeclaration seqDecl = (SequentialDeclaration) body;
+            FuncDeclaration found = findMethodInClassBody(seqDecl.D1, methodName);
+            if (found != null) return found;
+            return findMethodInClassBody(seqDecl.D2, methodName);
+        }
+        return null;
+    }
+
+  public Object visitMethodCallExpression(MethodCallExpression ast, Object o) {
+    TypeDenoter objType = (TypeDenoter) ast.object.visit(this, null);
+    if (!(objType instanceof ClassTypeDenoter)) {
+        reporter.reportError("La expresión no es un objeto de clase.", "", ast.object.position);
+        ast.type = StdEnvironment.errorType;
+        return ast.type;
+    }
+
+    ClassTypeDenoter classType = (ClassTypeDenoter) objType;
+    FuncDeclaration method = findMethodInClassBody(classType.body, ast.methodName.spelling);
+    if (method == null) {
+        reporter.reportError("Método \"" + ast.methodName.spelling + "\" no encontrado en la clase.", "", ast.methodName.position);
+        ast.type = StdEnvironment.errorType;
+        return ast.type;
+    }
+    //ActualParameter receiverParam = new VarActualParameter(ast.object, ast.position);
+    //ast.actualParams = new MultipleActualParameterSequence(receiverParam, ast.actualParams, ast.position);
+    ast.aps.visit(this, method.FPS);
+    ast.type = method.T;
+    if (ast.type == null) {
+        System.err.println("ERROR: ast.type es null en visitVnameExpression en " + ast.position);
+        ast.type = StdEnvironment.errorType;
+    }
+    ast.methodDecl = method; // encoder
+    return ast.type;
+}
+
+
   public Object visitCharacterExpression(CharacterExpression ast, Object o) {
     ast.type = StdEnvironment.charType;
     return ast.type;
@@ -315,6 +364,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitConstDeclaration(ConstDeclaration ast, Object o) {
+    ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
     idTable.enter(ast.I.spelling, ast);
     if (ast.duplicated)
@@ -324,6 +374,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitFuncDeclaration(FuncDeclaration ast, Object o) {
+    ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
     ast.T = (TypeDenoter) ast.T.visit(this, null);
     idTable.enter (ast.I.spelling, ast); // permits recursion
     if (ast.duplicated)
@@ -340,6 +391,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitProcDeclaration(ProcDeclaration ast, Object o) {
+    ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
     idTable.enter (ast.I.spelling, ast); // permits recursion
     if (ast.duplicated)
       reporter.reportError ("identifier \"%\" already declared",
@@ -352,12 +404,14 @@ public final class Checker implements Visitor {
   }
 
   public Object visitSequentialDeclaration(SequentialDeclaration ast, Object o) {
-    ast.D1.visit(this, null);
-    ast.D2.visit(this, null);
+    ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
+    ast.D1.visit(this, o);
+    ast.D2.visit(this, o);
     return null;
   }
 
   public Object visitTypeDeclaration(TypeDeclaration ast, Object o) {
+    ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
     ast.T = (TypeDenoter) ast.T.visit(this, null);
     idTable.enter (ast.I.spelling, ast);
     if (ast.duplicated)
@@ -371,6 +425,7 @@ public final class Checker implements Visitor {
   }
 
   public Object visitVarDeclaration(VarDeclaration ast, Object o) {
+    ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
     ast.T = (TypeDenoter) ast.T.visit(this, null);
     idTable.enter (ast.I.spelling, ast);
     if (ast.duplicated)
@@ -651,26 +706,21 @@ public final class Checker implements Visitor {
     ast.FT = (FieldTypeDenoter) ast.FT.visit(this, null);
     return ast;
   }
-  public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
-    TypeDeclaration classDecl = new TypeDeclaration(ast.classId, ast, ast.position);
-    idTable.enter(ast.classId.spelling, classDecl);
-    
-    if (classDecl.duplicated) {
-        reporter.reportError("Clase \"%\" ya definida", ast.classId.spelling, ast.position);
-    }
-    
+  public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {           
     if (ast.parentId.spelling.equals("Object")) {
-       ast.body.visit(this, null);
+        idTable.openScope();
+            ast.body.visit(this, true);
+        idTable.closeScope();
     } else {
         Declaration parentDecl = (Declaration) idTable.retrieve(ast.parentId.spelling);
         if (parentDecl == null) {
           reporter.reportError("Clase padre \"%\" no definida", ast.parentId.spelling, ast.parentId.position);
         }
         if (parentDecl instanceof TypeDeclaration) {
-            ast.parentType = ((TypeDeclaration) parentDecl).T;
+            ast.parentId.type = ((TypeDeclaration) parentDecl).T;
         }
         idTable.openScope();
-        ast.body.visit(this, null);
+        ast.body.visit(this, true);
         idTable.closeScope();
     }
     return ast;
@@ -732,20 +782,65 @@ public final class Checker implements Visitor {
   // Returns the TypeDenoter of the Vname. Does not use the
   // given object.
 
+  /*public Object visitDotVname(DotVname ast, Object o) {
+    ast.type = null;
+    TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
+    ast.variable = ast.V.variable;                    
+    if (vType instanceof RecordTypeDenoter){
+        ast.type = checkFieldIdentifier(((RecordTypeDenoter) vType).FT, ast.I);
+        if (ast.type == StdEnvironment.errorType){
+            reporter.reportError ("no field \"%\" in this record type", ast.I.spelling, ast.I.position);
+        }
+    } else if (vType instanceof ClassTypeDenoter) {
+        ast.type = checkFieldIdentifier(((ClassTypeDenoter) vType).body, ast.I);
+        if (ast.type == StdEnvironment.errorType){
+            reporter.reportError ("no field \"%\" in this class type", ast.I.spelling, ast.I.position);
+        }
+    } else {
+        reporter.reportError ("record or object expected here", "", ast.V.position);    
+    }
+    return ast.type;
+  }*/
   public Object visitDotVname(DotVname ast, Object o) {
     ast.type = null;
     TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
     ast.variable = ast.V.variable;
-    if (! (vType instanceof RecordTypeDenoter))
-      reporter.reportError ("record expected here", "", ast.V.position);
-    else {
-      ast.type = checkFieldIdentifier(((RecordTypeDenoter) vType).FT, ast.I);
-      if (ast.type == StdEnvironment.errorType)
-        reporter.reportError ("no field \"%\" in this record type",
-                              ast.I.spelling, ast.I.position);
+
+    if (vType instanceof RecordTypeDenoter) {
+        ast.type = checkFieldIdentifier(((RecordTypeDenoter) vType).FT, ast.I);
+        if (ast.type == StdEnvironment.errorType) {
+            reporter.reportError("no field \"%\" in this record type", ast.I.spelling, ast.I.position);
+        }
+    } else if (vType instanceof ClassTypeDenoter) {
+        Declaration decl = findFieldDeclaration(((ClassTypeDenoter) vType).body, ast.I);
+        if (decl == null || decl instanceof FuncDeclaration) {                  // No hace nada, esto para que use methodCallExpression
+            ast.type = StdEnvironment.errorType;
+        } else if (decl instanceof ConstDeclaration) {                          // Los otros es para que sí busque const y var
+            ast.type = ((ConstDeclaration) decl).E.type;
+            ast.I.decl = decl;
+        } else if (decl instanceof VarDeclaration) {
+            ast.type = ((VarDeclaration) decl).T;
+            ast.I.decl = decl;
+        }
+    } else {
+        reporter.reportError("record or object expected here", "", ast.V.position);
     }
     return ast.type;
-  }
+}
+
+    private Declaration findFieldDeclaration(Declaration body, Identifier I) {
+        if (body instanceof SequentialDeclaration) {
+            SequentialDeclaration seq = (SequentialDeclaration) body;
+            Declaration found = findFieldDeclaration(seq.D2, I);
+            if (found != null) return found;
+            return findFieldDeclaration(seq.D1, I);
+        } else if (body instanceof VarDeclaration || body instanceof ConstDeclaration) {
+            if (((VarDeclaration) body).I.spelling.equals(I.spelling)) {
+                return body;
+            }
+        }
+        return null;
+    }
 
   public Object visitSimpleVname(SimpleVname ast, Object o) {
     ast.variable = false;
@@ -847,7 +942,61 @@ public final class Checker implements Visitor {
     }
     return StdEnvironment.errorType;
   }
+  
+  private static TypeDenoter checkFieldIdentifier(Declaration ast, Identifier I) {
 
+    if(ast instanceof SequentialDeclaration){    
+        SequentialDeclaration sDeclaration = (SequentialDeclaration) ast;
+        if (sDeclaration.D2 instanceof VarDeclaration) {
+          VarDeclaration varDeclaration = (VarDeclaration) sDeclaration.D2;
+          if (varDeclaration.I.spelling.compareTo(I.spelling) == 0) {
+            I.decl = sDeclaration.D2;
+            return varDeclaration.T;
+          } else{
+              return checkFieldIdentifier (sDeclaration.D1, I);
+          }
+        } else if (sDeclaration.D2 instanceof FuncDeclaration) {
+            System.out.println("RevisaIdFuncion");
+            FuncDeclaration funcDeclaration = (FuncDeclaration) sDeclaration.D2;
+            if (funcDeclaration.I.spelling.compareTo(I.spelling) == 0) {
+              I.decl = sDeclaration.D2;
+              return funcDeclaration.T;
+            } else{
+              return checkFieldIdentifier (sDeclaration.D1, I);
+          }
+        } else if (sDeclaration.D2 instanceof ConstDeclaration) {
+            ConstDeclaration declaration = (ConstDeclaration) sDeclaration.D2;
+            if (declaration.I.spelling.compareTo(I.spelling) == 0) {
+              I.decl = sDeclaration.D2;
+              return declaration.E.type;
+            } else{
+              return checkFieldIdentifier (sDeclaration.D1, I);
+          }
+        }         
+    } else{
+        if (ast instanceof VarDeclaration) {
+          VarDeclaration varDeclaration = (VarDeclaration) ast;
+          if (varDeclaration.I.spelling.compareTo(I.spelling) == 0) {
+            I.decl = ast;
+            return varDeclaration.T;
+          } 
+        } else if (ast instanceof FuncDeclaration) {
+            FuncDeclaration funcDeclaration = (FuncDeclaration) ast;
+            if (funcDeclaration.I.spelling.compareTo(I.spelling) == 0) {
+              I.decl = ast;
+              return funcDeclaration.T;
+            }
+        }else if (ast instanceof ConstDeclaration) {
+            ConstDeclaration declaration = (ConstDeclaration) ast;
+            if (declaration.I.spelling.compareTo(I.spelling) == 0) {
+              I.decl = ast;
+              return declaration.E.type;            
+            }     
+        } 
+    }
+    
+    return StdEnvironment.errorType;
+  }
 
   // Creates a small AST to represent the "declaration" of a standard
   // type, and enters it in the identification table.

@@ -41,7 +41,10 @@ public interface Visitor {
   public abstract Object visitUnaryExpression(UnaryExpression ast, Object o);
   public abstract Object visitVnameExpression(VnameExpression ast, Object o);
   public abstract Object visitMatchExpression(MatchExpression ast, Object o);
+  public abstract Object visitMethodCallExpression(MethodCallExpression ast, Object o);
 
+  
+  
   // Declarations
   public abstract Object visitBinaryOperatorDeclaration(BinaryOperatorDeclaration ast, Object o);
   public abstract Object visitConstDeclaration(ConstDeclaration ast, Object o);

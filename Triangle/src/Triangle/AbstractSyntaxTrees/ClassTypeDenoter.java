@@ -3,17 +3,13 @@ package Triangle.AbstractSyntaxTrees;
 
 import Triangle.SyntacticAnalyzer.SourcePosition;
 
-public class ClassTypeDenoter extends TypeDenoter {
-    public Identifier classId;
+public class ClassTypeDenoter extends TypeDenoter {    
     public Identifier parentId;
-    public Declaration body;
-    public TypeDenoter parentType;
+    public Declaration body;    
 
-    public ClassTypeDenoter (Identifier classId, Identifier parentId, Declaration body, SourcePosition pos) {
-        super(pos);
-        this.classId = classId;
+    public ClassTypeDenoter (Identifier parentId, Declaration body, SourcePosition pos) {
+        super(pos);        
         this.parentId = parentId;
-        this.parentType = null;
         this.body = body;
     }
 
@@ -24,11 +20,10 @@ public class ClassTypeDenoter extends TypeDenoter {
   public boolean equals (Object obj) {
     if (obj != null && obj instanceof ErrorTypeDenoter)
       return true;
-    else if (obj != null && obj instanceof RecordTypeDenoter)
-      return this.FT.equals(((RecordTypeDenoter) obj).FT);
+    else if (obj != null && obj instanceof ClassTypeDenoter)
+      return this.body.equals(((ClassTypeDenoter) obj).body);
     else
       return false;
   }
 
-  public FieldTypeDenoter FT;
 }

@@ -75,6 +75,7 @@ import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.AbstractSyntaxTrees.MatchExpression;
 import Triangle.AbstractSyntaxTrees.RepeatCommand;
 import Triangle.AbstractSyntaxTrees.ClassTypeDenoter;
+import Triangle.AbstractSyntaxTrees.MethodCallExpression;
 import Triangle.CodeGenerator.Field;
 import Triangle.CodeGenerator.KnownAddress;
 import Triangle.CodeGenerator.KnownRoutine;
@@ -201,7 +202,12 @@ public class TableVisitor implements Visitor {
       
       return(null);
   }
-  
+  public Object visitMethodCallExpression(MethodCallExpression ast, Object o) { 
+      ast.methodName.visit(this, null);
+      ast.aps.visit(this, null);
+      
+      return(null);
+  }
   public Object visitCharacterExpression(CharacterExpression ast, Object o) { 
       ast.CL.visit(this, null);
       
@@ -354,8 +360,10 @@ public class TableVisitor implements Visitor {
       addIdentifier(ast.I.spelling, 
               "KnownAddress", 
               (ast.entity!=null?ast.entity.size:0), 
-              ((KnownAddress)ast.entity).address.level, 
-              ((KnownAddress)ast.entity).address.displacement, 
+              ast.entity instanceof KnownAddress ?
+              ((KnownAddress)ast.entity).address.level:0, 
+              ast.entity instanceof KnownAddress ?
+              ((KnownAddress)ast.entity).address.displacement:0, 
               -1);
       } catch (NullPointerException e) { }
       
@@ -559,7 +567,7 @@ public class TableVisitor implements Visitor {
   }
   // agregado
   public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {   
-      ast.FT.visit(this, null);
+      ast.body.visit(this, null);
       return(null);
   }
 

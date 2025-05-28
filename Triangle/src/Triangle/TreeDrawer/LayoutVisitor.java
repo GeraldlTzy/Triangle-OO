@@ -86,6 +86,7 @@ import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.AbstractSyntaxTrees.MatchExpression;
 import Triangle.AbstractSyntaxTrees.RepeatCommand;
+import Triangle.AbstractSyntaxTrees.MethodCallExpression;
 import Triangle.AbstractSyntaxTrees.ClassTypeDenoter;
 import java.util.ArrayList;
 import java.util.List;
@@ -166,6 +167,10 @@ public class LayoutVisitor implements Visitor {
     return layoutBinary("CallExpr.", ast.I, ast.APS);
   }
 
+  public Object visitMethodCallExpression(MethodCallExpression ast, Object obj) {
+    return layoutBinary("CallExpr.", ast.methodName, ast.aps);
+  }
+  
   public Object visitCharacterExpression(CharacterExpression ast, Object obj) {
     return layoutUnary("Char.Expr.", ast.CL);
   }

@@ -75,6 +75,7 @@ import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.AbstractSyntaxTrees.MatchExpression;
 import Triangle.AbstractSyntaxTrees.RepeatCommand;
 import Triangle.AbstractSyntaxTrees.ClassTypeDenoter;
+import Triangle.AbstractSyntaxTrees.MethodCallExpression;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -163,6 +164,9 @@ public class TreeVisitor implements Visitor {
     
     public Object visitCallExpression(CallExpression ast, Object obj) {
         return(createBinary("Call Expression", ast.I, ast.APS));
+    }
+    public Object visitMethodCallExpression(MethodCallExpression ast, Object obj) {
+        return(createBinary("Call Expression", ast.methodName, ast.aps));
     }
     
     public Object visitCharacterExpression(CharacterExpression ast, Object obj) {
@@ -365,7 +369,7 @@ public class TreeVisitor implements Visitor {
     }
     //agregado
     public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object obj) {
-        return(createUnary("Class Type Denoter", ast.FT));
+        return(createUnary("Class Type Denoter", ast.body));
     }
     
     public Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast, Object obj) {

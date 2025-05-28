@@ -24,4 +24,5 @@ public abstract class Declaration extends AST {
   }
 
   public boolean duplicated;
+  public boolean classDeclaration;
 }
