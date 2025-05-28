@@ -151,7 +151,8 @@ public class Parser {
       previousTokenPosition = currentToken.position;
       String spelling = currentToken.spelling;
       I = new Identifier(spelling, previousTokenPosition);
-      currentToken = lexicalAnalyser.scan();
+      //currentToken = lexicalAnalyser.scan();
+      acceptIt();
     } else {
       I = null;
       syntacticError("identifier expected here", "");
@@ -487,17 +488,43 @@ public class Parser {
     case Token.IDENTIFIER:
       {
         Identifier iAST= parseIdentifier();
+        Vname vAST2 = new SimpleVname(iAST, iAST.position);
         if (currentToken.kind == Token.LPAREN) {
           acceptIt();
           ActualParameterSequence apsAST = parseActualParameterSequence();
           accept(Token.RPAREN);
           finish(expressionPos);
           expressionAST = new CallExpression(iAST, apsAST, expressionPos);
-
         } else {
-          Vname vAST = parseRestOfVname(iAST);
-          finish(expressionPos);
-          expressionAST = new VnameExpression(vAST, expressionPos);
+            boolean method = false;
+            while (method == false && (currentToken.kind == Token.DOT || currentToken.kind == Token.LBRACKET)) {
+                if (currentToken.kind == Token.DOT) {
+                    acceptIt();
+                    Identifier iAST3 = parseIdentifier();
+
+                    if (currentToken.kind == Token.LPAREN){
+                        acceptIt();
+                        ActualParameterSequence apsAST = parseActualParameterSequence();
+                        accept(Token.RPAREN);
+                        finish(expressionPos);
+                        expressionAST = new MethodCallExpression(new SimpleVname(iAST, iAST.position), iAST3, apsAST, expressionPos);
+                        method = true;
+                        break;
+                    } else {
+                        vAST2 = new DotVname(vAST2, iAST3, iAST.position);
+                    }
+                } else {
+                    acceptIt();
+                    Expression eAST = parseExpression();
+                    accept(Token.RBRACKET);
+                    finish(iAST.position);
+                    vAST2 = new SubscriptVname(vAST2, eAST, iAST.position);
+                }
+            }
+            if (!method) {
+                finish(expressionPos);
+                expressionAST = new VnameExpression(vAST2, expressionPos);
+            }
         }
       }
       break;
@@ -606,19 +633,6 @@ public class Parser {
     }
     return aggregateAST;
   }
-  
-  /*ClassAggregate parseClassAggregate() throws SyntaxError {
-      ClassAggregate aggregateAST = null; // in case there's a syntactic error
-      SourcePosition aggregatePos = new SourcePosition();
-      start(aggregatePos);
-      
-      
-      s
-      
-      
-      return aggregateAST;
-  }*/
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // VALUE-OR-VARIABLE NAMES

@@ -215,6 +215,52 @@ public final class Checker implements Visitor {
     return ast.type;
   }
 
+    private FuncDeclaration findMethodInClassBody(Declaration body, String methodName) {
+        if (body == null) return null;
+        if (body instanceof FuncDeclaration) {
+            FuncDeclaration funcDecl = (FuncDeclaration) body;
+            if (funcDecl.I.spelling.equals(methodName)) {
+                return funcDecl;
+            } else {
+                return null;
+            }
+        } else if (body instanceof SequentialDeclaration) {
+            SequentialDeclaration seqDecl = (SequentialDeclaration) body;
+            FuncDeclaration found = findMethodInClassBody(seqDecl.D1, methodName);
+            if (found != null) return found;
+            return findMethodInClassBody(seqDecl.D2, methodName);
+        }
+        return null;
+    }
+
+  public Object visitMethodCallExpression(MethodCallExpression ast, Object o) {
+    TypeDenoter objType = (TypeDenoter) ast.object.visit(this, null);
+    if (!(objType instanceof ClassTypeDenoter)) {
+        reporter.reportError("La expresión no es un objeto de clase.", "", ast.object.position);
+        ast.type = StdEnvironment.errorType;
+        return ast.type;
+    }
+
+    ClassTypeDenoter classType = (ClassTypeDenoter) objType;
+    FuncDeclaration method = findMethodInClassBody(classType.body, ast.methodName.spelling);
+    if (method == null) {
+        reporter.reportError("Método \"" + ast.methodName.spelling + "\" no encontrado en la clase.", "", ast.methodName.position);
+        ast.type = StdEnvironment.errorType;
+        return ast.type;
+    }
+    //ActualParameter receiverParam = new VarActualParameter(ast.object, ast.position);
+    //ast.actualParams = new MultipleActualParameterSequence(receiverParam, ast.actualParams, ast.position);
+    ast.aps.visit(this, method.FPS);
+    ast.type = method.T;
+    if (ast.type == null) {
+        System.err.println("ERROR: ast.type es null en visitVnameExpression en " + ast.position);
+        ast.type = StdEnvironment.errorType;
+    }
+    ast.methodDecl = method; // encoder
+    return ast.type;
+}
+
+
   public Object visitCharacterExpression(CharacterExpression ast, Object o) {
     ast.type = StdEnvironment.charType;
     return ast.type;
@@ -736,7 +782,7 @@ public final class Checker implements Visitor {
   // Returns the TypeDenoter of the Vname. Does not use the
   // given object.
 
-  public Object visitDotVname(DotVname ast, Object o) {
+  /*public Object visitDotVname(DotVname ast, Object o) {
     ast.type = null;
     TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
     ast.variable = ast.V.variable;                    
@@ -754,7 +800,47 @@ public final class Checker implements Visitor {
         reporter.reportError ("record or object expected here", "", ast.V.position);    
     }
     return ast.type;
-  }
+  }*/
+  public Object visitDotVname(DotVname ast, Object o) {
+    ast.type = null;
+    TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
+    ast.variable = ast.V.variable;
+
+    if (vType instanceof RecordTypeDenoter) {
+        ast.type = checkFieldIdentifier(((RecordTypeDenoter) vType).FT, ast.I);
+        if (ast.type == StdEnvironment.errorType) {
+            reporter.reportError("no field \"%\" in this record type", ast.I.spelling, ast.I.position);
+        }
+    } else if (vType instanceof ClassTypeDenoter) {
+        Declaration decl = findFieldDeclaration(((ClassTypeDenoter) vType).body, ast.I);
+        if (decl == null || decl instanceof FuncDeclaration) {                  // No hace nada, esto para que use methodCallExpression
+            ast.type = StdEnvironment.errorType;
+        } else if (decl instanceof ConstDeclaration) {                          // Los otros es para que sí busque const y var
+            ast.type = ((ConstDeclaration) decl).E.type;
+            ast.I.decl = decl;
+        } else if (decl instanceof VarDeclaration) {
+            ast.type = ((VarDeclaration) decl).T;
+            ast.I.decl = decl;
+        }
+    } else {
+        reporter.reportError("record or object expected here", "", ast.V.position);
+    }
+    return ast.type;
+}
+
+    private Declaration findFieldDeclaration(Declaration body, Identifier I) {
+        if (body instanceof SequentialDeclaration) {
+            SequentialDeclaration seq = (SequentialDeclaration) body;
+            Declaration found = findFieldDeclaration(seq.D2, I);
+            if (found != null) return found;
+            return findFieldDeclaration(seq.D1, I);
+        } else if (body instanceof VarDeclaration || body instanceof ConstDeclaration) {
+            if (((VarDeclaration) body).I.spelling.equals(I.spelling)) {
+                return body;
+            }
+        }
+        return null;
+    }
 
   public Object visitSimpleVname(SimpleVname ast, Object o) {
     ast.variable = false;

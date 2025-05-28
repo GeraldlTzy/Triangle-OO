@@ -3,27 +3,14 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/Identifier.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/TypeDeclaration.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/ContextualAnalyzer/Checker.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/SyntacticAnalyzer/Parser.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/AssignCommand.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/VarDeclaration.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/FuncDeclaration.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/ConstDeclaration.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/SingleFieldTypeDenoter.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/ProcDeclaration.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/SimpleVname.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/SequentialDeclaration.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/ActualParameterSequence.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/SyntacticAnalyzer/Token.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/MultipleFieldTypeDenoter.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/ContextualAnalyzer/IdEntry.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/ClassTypeDenoter.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/FieldTypeDenoter.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/RecordTypeDenoter.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/SubscriptVname.java</file>
-            <file>file:/C:/Users/Andrey%20Calvo/Documents/TEC/V%20Semestre/Compiladores/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/MultipleRecordAggregate.java</file>
+            <file>file:/C:/Users/geral/Documents/TEC/TEC%20-%20Vault/Compiladores/Tarea%202/Repositorio/Triangle-OO/Triangle/src/Triangle/TreeDrawer/LayoutVisitor.java</file>
+            <file>file:/C:/Users/geral/Documents/TEC/TEC%20-%20Vault/Compiladores/Tarea%202/Repositorio/Triangle-OO/Triangle/src/Triangle/SyntacticAnalyzer/Parser.java</file>
+            <file>file:/C:/Users/geral/Documents/TEC/TEC%20-%20Vault/Compiladores/Tarea%202/Repositorio/Triangle-OO/Triangle/src/Triangle/ContextualAnalyzer/Checker.java</file>
+            <file>file:/C:/Users/geral/Documents/TEC/TEC%20-%20Vault/Compiladores/Tarea%202/Repositorio/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/MethodCallExpression.java</file>
+            <file>file:/C:/Users/geral/Documents/TEC/TEC%20-%20Vault/Compiladores/Tarea%202/Repositorio/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/ClassTypeDenoter.java</file>
+            <file>file:/C:/Users/geral/Documents/TEC/TEC%20-%20Vault/Compiladores/Tarea%202/Repositorio/Triangle-OO/Triangle/src/Triangle/AbstractSyntaxTrees/Visitor.java</file>
+            <file>file:/C:/Users/geral/Documents/TEC/TEC%20-%20Vault/Compiladores/Tarea%202/Repositorio/Triangle-OO/Triangle/src/Triangle/CodeGenerator/Encoder.java</file>
+            <file>file:/C:/Users/geral/Documents/TEC/TEC%20-%20Vault/Compiladores/Tarea%202/Repositorio/Triangle-OO/Triangle/src/Triangle/SyntacticAnalyzer/Token.java</file>
         </group>
     </open-files>
 </project-private>

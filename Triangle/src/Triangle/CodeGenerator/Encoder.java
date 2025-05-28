@@ -97,6 +97,7 @@ import Triangle.AbstractSyntaxTrees.WhileCommand;
 import Triangle.AbstractSyntaxTrees.ForCommand;
 import Triangle.AbstractSyntaxTrees.MatchExpression;
 import Triangle.AbstractSyntaxTrees.RepeatCommand;
+import Triangle.AbstractSyntaxTrees.MethodCallExpression;
 import Triangle.ContextualAnalyzer.IdentificationTable;
 import Triangle.AbstractSyntaxTrees.ClassTypeDenoter;
 import java.util.ArrayList;
@@ -732,33 +733,43 @@ public final class Encoder implements Visitor {
       typeSize = ast.entity.size;
     return new Integer(typeSize);
   }
+
   
+
+public Object visitMethodCallExpression(MethodCallExpression ast, Object o) {
+    Frame frame = (Frame) o;
+    if (ast.methodDecl == null) {
+        reporter.reportError("Declaración del método no encontrada para llamada a método.", "", ast.position);
+        return new Integer(0);
+    }
+    if (ast.methodDecl.entity == null) {
+        reporter.reportError("Entidad no asignada a la declaración del método.", "", ast.position);
+        return new Integer(0);
+    }
+    KnownRoutine kr;
+    try {
+        kr = (KnownRoutine) ast.methodDecl.entity;
+    } catch (ClassCastException e) {
+        reporter.reportError("La entidad del método no es una rutina conocida.", "", ast.position);
+        return new Integer(0);
+    }
+    if (ast.aps != null) {
+        ast.aps.visit(this, frame);
+    } else {
+        // sin parametros
+    }
+    if (kr.address == null) {
+        reporter.reportError("Dirección no asignada a la rutina.", "", ast.position);
+        return new Integer(0);
+    }
+    emit(Machine.CALLop, 0, 0, kr.address.displacement);
+    if (ast.type == null || ast.type == StdEnvironment.errorType) {
+        return new Integer(0);
+    } else {
+        return new Integer(Machine.addressSize);
+    }
+} 
 public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
-//    int typeSize = 0;
-//    Frame frame = (Frame) o;
-//    if (ast.entity == null) {
-//        if (ast.parentId.type != null) {
-//            //Para que las variables tengan el frame 
-//            Frame frame1 = new Frame (frame, typeSize);
-//            
-//            System.out.println("El padre");
-//            Integer parentSize = ((Integer) ast.parentId.type.visit(this, frame1)).intValue();
-//            typeSize += parentSize;
-//        }
-//        System.out.println("El body");
-//        //Para que las variables tengan el frame 
-//        Frame frame2 = new Frame (frame, typeSize);
-//        
-//        Integer bodySize = ((Integer) ast.body.visit(this, frame2)).intValue();
-//        typeSize += bodySize;
-//
-//        ast.entity = new TypeRepresentation(typeSize);
-//        writeTableDetails(ast);
-//    } else {
-//        typeSize = ast.entity.size;
-//    }
-//
-//    return new Integer(typeSize);
     Frame frame = (Frame) o;
     int typeSize = 0;
     frame.offset = 0;
@@ -767,8 +778,7 @@ public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
             int parentSize =  (Integer) ast.parentId.type.visit(this, frame);
             typeSize += parentSize;
             frame.offset = typeSize;
-        }               
-        
+        }
         Integer bodySize = (Integer) ast.body.visit(this, frame); //Calcular el tamaño del body teniendo en cuenta el offset del tipo padre
         typeSize += bodySize;
 
