@@ -2,13 +2,16 @@ let
   type punto ~ class inherits Object
     var x : Integer;
     var y : Integer;
-    const pi ~ 3
+    const pi ~ 3;
+    var z: Integer
   end;
   var unPunto : punto;
   var otroPunto : punto
 in begin
-  unPunto.x := 2;
+  unPunto.x := 1;
   otroPunto.y := 5;
+  otroPunto.x := 41;
+  unPunto.z := 10;
   putint(unPunto.x);
   putint(otroPunto.x);
   putint(unPunto.pi);

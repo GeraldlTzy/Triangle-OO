@@ -467,21 +467,13 @@ public final class Encoder implements Visitor {
     int extraSize1, extraSize2;                
     Frame frame = (Frame) o;
     
-    System.out.println("Declarar D1 de la declaracion de algo");
-    extraSize1 = ((Integer) ast.D1.visit(this, frame)).intValue();
-    if(ast.D1 instanceof VarDeclaration){
-        frame.offset += extraSize1;
-    }else{
-        frame = new Frame (frame, extraSize1);
-    }
+    extraSize1 = ((Integer) ast.D1.visit(this, frame)).intValue();    
+    frame = new Frame (frame, extraSize1);
+    frame.offset = extraSize1;      // El offset se usa cuando se declara una clase
     
-    System.out.println("Declarar D2 de la declaracion de algo");
-    extraSize2 = ((Integer) ast.D2.visit(this, frame)).intValue();
-    if(ast.D2 instanceof VarDeclaration){
-        frame.offset += extraSize1;
-    }else{
-        Frame frame1 = new Frame (frame, extraSize1);
-    }    
+    extraSize2 = ((Integer) ast.D2.visit(this, frame)).intValue();    
+    frame = new Frame (frame, extraSize2);        
+    frame.offset = extraSize1 + extraSize2;    // El offset se usa cuando se declara una clase
     
     return extraSize1 + extraSize2;
   }
@@ -507,10 +499,8 @@ public final class Encoder implements Visitor {
 
   public Object visitVarDeclaration(VarDeclaration ast, Object o) {   
     int extraSize;
-    Frame frame = (Frame) o;
-    System.out.println("Declaracion de una variable");
-    extraSize = ((Integer) ast.T.visit(this, o)).intValue();
-    System.out.println(ast.classDeclaration);
+    Frame frame = (Frame) o;    
+    extraSize = ((Integer) ast.T.visit(this, o)).intValue();    
     if(ast.classDeclaration){        
         ast.entity = new Field(extraSize, frame.offset);
     } else {        
@@ -763,8 +753,7 @@ public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
         // Se guarda el tamaño de la clase
         ast.entity = new TypeRepresentation(typeSize);
         // Ahora sí visitamos las funciones
-        ast.body.visit(this, frame);
-        
+        ast.body.visit(this, frame);        
         writeTableDetails(ast);
         frame.offset = 0;
     } else {
