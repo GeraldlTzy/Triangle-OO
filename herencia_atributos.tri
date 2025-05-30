@@ -1,0 +1,25 @@
+let
+  type Punto ~ class inherits Object
+    var x : Integer;
+    var y: Integer;
+    func getX(self : Punto) : Integer ~ self.x;
+    func getY(self:Punto) : Integer ~ self.y;
+    func incr(n:Integer) : Integer ~ n+1
+  end;
+  type Linea ~ class inherits Punto
+     var x2 : Integer;
+     var y2: Integer
+  end;
+  var unPunto : Punto;
+  var unaLinea: Linea;
+  var z : Integer
+in begin
+  unPunto.y := 2;
+  unPunto.x:= 3;
+  unaLinea.x := 4;
+  unaLinea.y2 := 5;
+  z := 20;
+  putint(unPunto.getX(unPunto));
+  putint(unaLinea.incr(99));
+  putint(unaLinea.getX(unaLinea))
+end

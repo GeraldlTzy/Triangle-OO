@@ -691,7 +691,7 @@ public final class Checker implements Visitor {
     return ast;
   }
   public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {           
-    if (ast.parentId.spelling.equals("Object")) {
+    if (ast.parentId.spelling.equals("Object")) {        
         idTable.openScope();
             ast.body.visit(this, true);
         idTable.closeScope();
@@ -701,7 +701,7 @@ public final class Checker implements Visitor {
           reporter.reportError("Clase padre \"%\" no definida", ast.parentId.spelling, ast.parentId.position);
         }
         if (parentDecl instanceof TypeDeclaration) {
-            ast.parentId.type = ((TypeDeclaration) parentDecl).T;
+            ast.parentId.type = ((TypeDeclaration) parentDecl).T;            
         }
         idTable.openScope();
         ast.body.visit(this, true);
@@ -775,9 +775,14 @@ public final class Checker implements Visitor {
         if (ast.type == StdEnvironment.errorType){
             reporter.reportError ("no field \"%\" in this record type", ast.I.spelling, ast.I.position);
         }
-    } else if (vType instanceof ClassTypeDenoter) {
-        ast.type = checkFieldIdentifier(((ClassTypeDenoter) vType).body, ast.I);
-        if (ast.type == StdEnvironment.errorType){
+    } else if (vType instanceof ClassTypeDenoter) {        
+        while(vType instanceof ClassTypeDenoter){
+            ast.type = checkFieldIdentifier(((ClassTypeDenoter) vType).body, ast.I);
+            if (ast.type != StdEnvironment.errorType) break;
+            //Si no encuentra el atributo busca en la clase padre
+            vType = ((ClassTypeDenoter) vType).parentId.type;
+        }                
+        if (ast.type == StdEnvironment.errorType){            
             reporter.reportError ("no field \"%\" in this class type", ast.I.spelling, ast.I.position);
         }
     } else {
