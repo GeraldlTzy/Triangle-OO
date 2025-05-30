@@ -567,7 +567,7 @@ public class TableVisitor implements Visitor {
   }
   // agregado
   public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {   
-      ast.body.visit(this, null);
+      //ast.body.visit(this, null);
       return(null);
   }
 

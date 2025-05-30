@@ -412,6 +412,10 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitFuncDeclaration(FuncDeclaration ast, Object o) {
+    if (ast.classDeclaration){
+        ast.classDeclaration = false;
+        return 0;
+    }
     Frame frame = (Frame) o;
     int jumpAddr = nextInstrAddr;
     int argsSize = 0, valSize = 0;
@@ -770,24 +774,25 @@ public Object visitMethodCallExpression(MethodCallExpression ast, Object o) {
     }
 } 
 public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
-    Frame frame = (Frame) o;
     int typeSize = 0;
-    frame.offset = 0;
     if (ast.entity == null) { // Calcular el tamaño del tipo
+        Frame frame = (Frame) o;
+        frame.offset = 0;
         if (ast.parentId.type != null) { //Calcular el tamaño del tipo padre                                  
             int parentSize =  (Integer) ast.parentId.type.visit(this, frame);
             typeSize += parentSize;
             frame.offset = typeSize;
         }
-        Integer bodySize = (Integer) ast.body.visit(this, frame); //Calcular el tamaño del body teniendo en cuenta el offset del tipo padre
+        Integer bodySize = (Integer) ast.body.visit(this, new Frame()); //Calcular el tamaño del body teniendo en cuenta el offset del tipo padre
         typeSize += bodySize;
 
         ast.entity = new TypeRepresentation(typeSize);
+        ast.body.visit(this, frame);
         writeTableDetails(ast);
+        frame.offset = 0;
     } else {
         typeSize = ast.entity.size;
     }
-    frame.offset = 0;
     return typeSize;    
 }
 

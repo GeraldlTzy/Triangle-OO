@@ -412,8 +412,8 @@ public final class Checker implements Visitor {
 
   public Object visitTypeDeclaration(TypeDeclaration ast, Object o) {
     ast.classDeclaration = o instanceof Boolean ? (Boolean) o : false;
-    ast.T = (TypeDenoter) ast.T.visit(this, null);
     idTable.enter (ast.I.spelling, ast);
+    ast.T = (TypeDenoter) ast.T.visit(this, null);
     if (ast.duplicated)
       reporter.reportError ("identifier \"%\" already declared",
                             ast.I.spelling, ast.position);
