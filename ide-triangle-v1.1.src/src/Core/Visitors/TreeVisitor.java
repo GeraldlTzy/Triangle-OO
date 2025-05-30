@@ -375,7 +375,8 @@ public class TreeVisitor implements Visitor {
     }
     //agregado
     public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object obj) {
-        return(createUnary("Class Type Denoter", ast.body));
+        //return(createUnary("Class Type Denoter", ast.body));
+        return createNullary("stop recursion");
     }
     
     public Object visitMultipleFieldTypeDenoter(MultipleFieldTypeDenoter ast, Object obj) {

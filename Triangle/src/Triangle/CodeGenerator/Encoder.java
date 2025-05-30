@@ -417,6 +417,10 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitFuncDeclaration(FuncDeclaration ast, Object o) {
+    if(ast.classDeclaration) {
+        ast.classDeclaration = false;
+        return 0;
+    }
     Frame frame = (Frame) o;
     int jumpAddr = nextInstrAddr;
     int argsSize = 0, valSize = 0;
@@ -739,51 +743,34 @@ public final class Encoder implements Visitor {
     return new Integer(typeSize);
   }
   
-public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {
-//    int typeSize = 0;
-//    Frame frame = (Frame) o;
-//    if (ast.entity == null) {
-//        if (ast.parentId.type != null) {
-//            //Para que las variables tengan el frame 
-//            Frame frame1 = new Frame (frame, typeSize);
-//            
-//            System.out.println("El padre");
-//            Integer parentSize = ((Integer) ast.parentId.type.visit(this, frame1)).intValue();
-//            typeSize += parentSize;
-//        }
-//        System.out.println("El body");
-//        //Para que las variables tengan el frame 
-//        Frame frame2 = new Frame (frame, typeSize);
-//        
-//        Integer bodySize = ((Integer) ast.body.visit(this, frame2)).intValue();
-//        typeSize += bodySize;
-//
-//        ast.entity = new TypeRepresentation(typeSize);
-//        writeTableDetails(ast);
-//    } else {
-//        typeSize = ast.entity.size;
-//    }
-//
-//    return new Integer(typeSize);
-    Frame frame = (Frame) o;
+public Object visitClassTypeDenoter(ClassTypeDenoter ast, Object o) {   
     int typeSize = 0;
-    frame.offset = 0;
+    
     if (ast.entity == null) { // Calcular el tamaño del tipo
+        Frame frame = (Frame) o;
+        frame.offset = 0;
         if (ast.parentId.type != null) { //Calcular el tamaño del tipo padre                                  
             int parentSize =  (Integer) ast.parentId.type.visit(this, frame);
             typeSize += parentSize;
             frame.offset = typeSize;
         }               
         
-        Integer bodySize = (Integer) ast.body.visit(this, frame); //Calcular el tamaño del body teniendo en cuenta el offset del tipo padre
+        //Obtener el tamaño de la clase sin visitar funciones
+        //Se pasa un frame de mentiras
+        Integer bodySize = (Integer) ast.body.visit(this, new Frame());       
         typeSize += bodySize;
-
+        
+        // Se guarda el tamaño de la clase
         ast.entity = new TypeRepresentation(typeSize);
+        // Ahora sí visitamos las funciones
+        ast.body.visit(this, frame);
+        
         writeTableDetails(ast);
+        frame.offset = 0;
     } else {
         typeSize = ast.entity.size;
     }
-    frame.offset = 0;
+    
     return typeSize;    
 }
 

@@ -1,0 +1,10 @@
+let
+  type Punto ~ class inherits Object
+    var x : Integer;
+    func getXMasUno(self : Punto) : Integer ~ self.x + 1
+  end;
+  var unPunto : Punto
+in begin
+  unPunto.x := 2;
+  putint(unPunto.getXMasUno(unPunto))
+end
