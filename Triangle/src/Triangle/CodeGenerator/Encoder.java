@@ -112,13 +112,20 @@ public final class Encoder implements Visitor {
     Integer valSize = (Integer) ast.E.visit(this, frame);
     encodeStore(ast.V, new Frame (frame, valSize.intValue()),
         valSize.intValue());
+    
     return null;
   }
-
+    
   public Object visitCallCommand(CallCommand ast, Object o) {
     Frame frame = (Frame) o;
     Integer argsSize = (Integer) ast.APS.visit(this, frame);
-    ast.I.visit(this, new Frame(frame.level, argsSize));
+    if(ast.I == null){
+           DotVname vName = (DotVname) ast.V;
+           vName.I.visit(this, new Frame(frame.level, argsSize));
+           
+    }else{
+        ast.I.visit(this, new Frame(frame.level, argsSize));
+    }
     return null;
   }
 
@@ -442,6 +449,11 @@ public final class Encoder implements Visitor {
   }
 
   public Object visitProcDeclaration(ProcDeclaration ast, Object o) {
+    if(ast.classDeclaration) {
+        ast.classDeclaration = false;
+        return 0;
+    }
+    
     Frame frame = (Frame) o;
     int jumpAddr = nextInstrAddr;
     int argsSize = 0;

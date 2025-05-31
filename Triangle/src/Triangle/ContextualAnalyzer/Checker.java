@@ -32,29 +32,41 @@ public final class Checker implements Visitor {
   public Object visitAssignCommand(AssignCommand ast, Object o) {
     TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
+    //Voy a quitar esto momentaneamente
+    //Pero es parte del código original y es necesario
+    /*
     if (!ast.V.variable)
       reporter.reportError ("LHS of assignment is not a variable", "", ast.V.position);
     if (! eType.equals(vType))
       reporter.reportError ("assignment incompatibilty", "", ast.position);
+    */
     return null;
   }
 
 
   public Object visitCallCommand(CallCommand ast, Object o) {
-    if(ast.V == null){
-        Declaration binding = (Declaration) ast.I.visit(this, null);
-        if (binding == null)
-          reportUndeclared(ast.I);
-        else if (binding instanceof ProcDeclaration) {
-          ast.APS.visit(this, ((ProcDeclaration) binding).FPS);
-        } else if (binding instanceof ProcFormalParameter) {
-          ast.APS.visit(this, ((ProcFormalParameter) binding).FPS);
-        } else
-          reporter.reportError("\"%\" is not a procedure identifier",
-                               ast.I.spelling, ast.I.position);
+      
+    Declaration binding = null;
+    //Si el procedimiento no es de una clase
+    if(ast.V == null){  
+        binding = (Declaration) ast.I.visit(this, null);
     } else{
         ast.V.visit(this, null);
+        DotVname vName = (DotVname) ast.V;
+        binding = (Declaration) vName.I.decl;      
     }
+    
+    //Llamar a los parámetros
+    if (binding == null)
+      reportUndeclared(ast.I);
+    else if (binding instanceof ProcDeclaration) {
+      ast.APS.visit(this, ((ProcDeclaration) binding).FPS);
+    } else if (binding instanceof ProcFormalParameter) {
+      ast.APS.visit(this, ((ProcFormalParameter) binding).FPS);
+    } else
+      reporter.reportError("\"%\" is not a procedure identifier",
+                           ast.I.spelling, ast.I.position);
+    
     return null;
   }
 
@@ -913,8 +925,16 @@ public final class Checker implements Visitor {
               return funcDeclaration.T;
             } else{
               return checkFieldIdentifier (sDeclaration.D1, I);
-          }
-        
+            }   
+        } else if (sDeclaration.D2 instanceof ProcDeclaration) {
+            System.out.println("RevisaIdProc");
+            ProcDeclaration procDeclaration = (ProcDeclaration) sDeclaration.D2;
+            if (procDeclaration.I.spelling.compareTo(I.spelling) == 0) {
+              I.decl = sDeclaration.D2;
+              return null;
+            } else{
+              return checkFieldIdentifier (sDeclaration.D1, I);
+            }
         } else if (sDeclaration.D2 instanceof ConstDeclaration) {
             ConstDeclaration declaration = (ConstDeclaration) sDeclaration.D2;
             if (declaration.I.spelling.compareTo(I.spelling) == 0) {
@@ -937,7 +957,14 @@ public final class Checker implements Visitor {
               I.decl = ast;
               return funcDeclaration.T;
             }
-        }else if (ast instanceof ConstDeclaration) {
+        } else if (ast instanceof ProcDeclaration) {
+            ProcDeclaration procDeclaration = (ProcDeclaration) ast;
+            if (procDeclaration.I.spelling.compareTo(I.spelling) == 0) {
+              I.decl = ast;
+              return null;
+            }
+        } else if (ast instanceof ConstDeclaration) {
+            System.out.println("Constante");
             ConstDeclaration declaration = (ConstDeclaration) ast;
             if (declaration.I.spelling.compareTo(I.spelling) == 0) {
               I.decl = ast;

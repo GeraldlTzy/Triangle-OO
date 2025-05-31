@@ -104,7 +104,15 @@ public class TreeVisitor implements Visitor {
     }
     
     public Object visitCallCommand(CallCommand ast, Object o) {
-        return(createBinary("Call Command", ast.I, ast.APS));
+        
+        if(ast.V == null){
+            return(createBinary("Call Command", ast.I, ast.APS));        
+        } else{
+            ast.V.visit(this, null);
+            DotVname vName = (DotVname) ast.V;
+            return(createBinary("Call Command", vName.I, ast.APS)); 
+                   
+        }
     }
     
     public Object visitEmptyCommand(EmptyCommand ast, Object o) {

@@ -111,8 +111,15 @@ public class TableVisitor implements Visitor {
   }
   
   public Object visitCallCommand(CallCommand ast, Object o) { 
-      ast.I.visit(this, null);
-      ast.APS.visit(this, null);
+      if(ast.V == null){
+            ast.I.visit(this, null);
+            ast.APS.visit(this, null); 
+      } else {            
+            DotVname vName = (DotVname) ast.V;
+            vName.I.visit(this, null);
+            ast.APS.visit(this, null);
+                   
+      }
       
       return(null);
   }
