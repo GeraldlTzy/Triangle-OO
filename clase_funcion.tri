@@ -7,8 +7,8 @@ let
     var w: Integer;
     var r: Integer;
     const i ~ 5;
-    proc setX(self: Punto) ~ self.x := 5;
-    proc getX(self: Punto) ~ putint(self.x);
+    proc setX(var self: Punto) ~ self.x := 4;
+    proc printX(self: Punto) ~ putint(self.x);
     func getXMasUno(self : Punto) : Integer ~ self.x + 1
   end;
 
@@ -22,6 +22,6 @@ in begin
   z := 20;
   putint(unPunto.i);
   putint(unPunto.getXMasUno(unPunto));
-  unPunto.setX(unPunto);
-  putint(unPunto.x)
+  unPunto.setX(var unPunto);
+  unPunto.printX(unPunto);
 end

@@ -32,14 +32,12 @@ public final class Checker implements Visitor {
   public Object visitAssignCommand(AssignCommand ast, Object o) {
     TypeDenoter vType = (TypeDenoter) ast.V.visit(this, null);
     TypeDenoter eType = (TypeDenoter) ast.E.visit(this, null);
-    //Voy a quitar esto momentaneamente
-    //Pero es parte del código original y es necesario
-    /*
+    
     if (!ast.V.variable)
       reporter.reportError ("LHS of assignment is not a variable", "", ast.V.position);
     if (! eType.equals(vType))
       reporter.reportError ("assignment incompatibilty", "", ast.position);
-    */
+    
     return null;
   }
 
